@@ -26,6 +26,9 @@ func RunServer() {
 }
 
 func _UserRoutes(server *gin.Engine, useController controller.UserController) {
-	server.GET("/readUser", useController.UserRead)
-	server.POST("/createUser", useController.UserCreate)
+	server.GET("/readUser/:id", useController.ReadUser)
+	server.GET("/readAllUser", useController.ReadAllUser)
+	server.POST("/createUser", useController.CreateUser)
+	server.PUT("/updateUser", useController.UpdateUser)
+	server.DELETE("/deleteUser", useController.DeleteUser)
 }

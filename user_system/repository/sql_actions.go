@@ -26,19 +26,86 @@ func (it *SQLManager) UserSaveSQL(info model.User) error {
 	}
 	return nil
 }
-func (it *SQLManager) UserReadSQL() ([]model.User, error) {
-	return []model.User{
-		{Id: 0, Name: "niel", Email: "", Password: "", Role: "", Date: ""},
-	}, nil
+
+func (it *SQLManager) UserReadSQL(infoID int) (model.User, error) {
+	var query = `SELECT id, name, email, password, role, date FROM users WHERE id=$1`
+	var row = it.DB.QueryRow(query, infoID)
+
+	var userObj model.User
+	var err = row.Scan(
+		&userObj.Id,
+		&userObj.Name,
+		&userObj.Email,
+		&userObj.Password,
+		&userObj.Role,
+		&userObj.Date,
+	)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			fmt.Println("Nenhum registro encontro.")
+		} else {
+			fmt.Println("Erro de consulta: ", err)
+		}
+		return model.User{}, err
+	}
+
+	return userObj, nil
 }
+
+func (it *SQLManager) ReadAllUserSQL() ([]model.User, error) {
+	var query = `SELECT id, name, email, password, role, date FROM users`
+	var rows, err = it.DB.Query(query)
+	if err != nil {
+		fmt.Printf("Erro de consulta: %v", err)
+		return []model.User{}, err
+	}
+
+	var userList []model.User
+	var m model.User
+
+	for rows.Next() {
+		var err = rows.Scan(
+			&m.Id,
+			&m.Name,
+			&m.Email,
+			&m.Password,
+			&m.Role,
+			&m.Date,
+		)
+		if err != nil {
+			fmt.Printf("Erro de Leitura dos dados do Banco: %v", err)
+			return []model.User{}, err
+		}
+		userList = append(userList, m)
+	}
+	rows.Close()
+	return userList, nil
+}
+
 func (it *SQLManager) UserUpdateSQL(info model.User) error {
+	var query = `UPDATE users SET name=$1, password=$2 WHERE id = $3`
+
+	var _, err = it.DB.Exec(query, info.Name, info.Password, info.Id)
+	if err != nil {
+		fmt.Println("Erro ao atulizar campo da table: ", err)
+		return err
+	}
+
 	return nil
 }
-func (it *SQLManager) UserDeleteSQL(info struct{ Id string }) error {
+
+func (it *SQLManager) UserDeleteSQL(infoID int) error {
+	var query = `DELETE FROM users WHERE id = $1`
+	var _, err = it.DB.Exec(query, infoID)
+	if err != nil {
+		fmt.Println("Erro ao excluir: ", err)
+		return err
+	}
 	return nil
 }
 
 // ----
+
 func (it *SQLManager) CreateUserTable() {
 	var _, err = it.DB.Exec(`
 		CREATE TABLE users (
