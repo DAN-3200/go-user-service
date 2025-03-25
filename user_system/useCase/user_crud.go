@@ -8,7 +8,7 @@ import (
 )
 
 type UserUseCase struct {
-	db contracts.IDB
+	DB contracts.IDB
 }
 
 func NewUserUseCase(db contracts.IDB) *UserUseCase {
@@ -18,7 +18,7 @@ func NewUserUseCase(db contracts.IDB) *UserUseCase {
 // -- Methods
 
 func (it *UserUseCase) UserRead(infoID int) model.User {
-	var result, err = it.db.UserReadSQL(infoID)
+	var result, err = it.DB.UserReadSQL(infoID)
 	if err != nil {
 		fmt.Printf("Erro: %v", err)
 		return model.User{}
@@ -28,7 +28,7 @@ func (it *UserUseCase) UserRead(infoID int) model.User {
 }
 
 func (it *UserUseCase) ReadAllUser() ([]model.User, error) {
-	var result, err = it.db.ReadAllUserSQL()
+	var result, err = it.DB.ReadAllUserSQL()
 	if err != nil {
 		fmt.Printf("Erro: %v", err)
 		return []model.User{}, err
@@ -38,7 +38,7 @@ func (it *UserUseCase) ReadAllUser() ([]model.User, error) {
 }
 
 func (it *UserUseCase) UserCreate(info model.User) error {
-	var err = it.db.UserSaveSQL(info)
+	var err = it.DB.UserSaveSQL(info)
 	if err != nil {
 		fmt.Printf("Erro: %v", err)
 		return err
@@ -47,7 +47,7 @@ func (it *UserUseCase) UserCreate(info model.User) error {
 }
 
 func (it *UserUseCase) UserUpdate(info model.User) error {
-	var err = it.db.UserUpdateSQL(info)
+	var err = it.DB.UserUpdateSQL(info)
 	if err != nil {
 		fmt.Printf("Erro: %v", err)
 		return err
@@ -56,17 +56,10 @@ func (it *UserUseCase) UserUpdate(info model.User) error {
 }
 
 func (it *UserUseCase) UserDelete(idUser int) error {
-	var err = it.db.UserDeleteSQL(idUser)
+	var err = it.DB.UserDeleteSQL(idUser)
 	if err != nil {
 		fmt.Printf("Erro: %v", err)
 		return err
 	}
 	return nil
-}
-
-func (it *UserUseCase) UserLogin(login struct {
-	Name     string
-	Password string
-}) {
-
 }

@@ -9,4 +9,5 @@ type IDB interface {
 	ReadAllUserSQL() ([]model.User, error)
 	UserUpdateSQL(info model.User) error
 	UserDeleteSQL(infoID int) error
+	LoginUserSQL(UserEmail string) (model.User, error)
 }

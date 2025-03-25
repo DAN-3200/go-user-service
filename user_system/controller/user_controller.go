@@ -26,7 +26,7 @@ func (it *UserController) ReadUser(ctx *gin.Context) {
 	if request == "" {
 		ctx.JSON(http.StatusBadRequest, "Id não fornecido")
 	}
-	
+
 	idParam, err := strconv.Atoi(request)
 	if err != nil {
 		ctx.JSON(http.StatusBadRequest, "Id inválido")
@@ -61,6 +61,7 @@ func (it *UserController) CreateUser(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, "Ok")
 }
 
+// tem erro aqui
 func (it *UserController) UpdateUser(ctx *gin.Context) {
 	var request model.User
 	if err := ctx.BindJSON(&request); err != nil {

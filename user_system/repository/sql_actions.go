@@ -104,6 +104,34 @@ func (it *SQLManager) UserDeleteSQL(infoID int) error {
 	return nil
 }
 
+// criar Login Consulta
+
+func (it *SQLManager) LoginUserSQL(UserEmail string) (model.User, error) {
+	var query = `SELECT id, name, password, email, role FROM users WHERE email=$1;`
+
+	var mU model.User
+	var err = it.DB.QueryRow(query, UserEmail).
+		Scan(
+			&mU.Id,
+			&mU.Name,
+			&mU.Password,
+			&mU.Email,
+			&mU.Role,
+		)
+
+	if err != nil {
+		if err == sql.ErrNoRows {
+			fmt.Println("Nenhum registro encontrado")
+			return mU, fmt.Errorf("Nenhum registro encontrado")
+		} else {
+			fmt.Println("Erro de consulta: ", err)
+		}
+		return mU, err
+	}
+
+	return mU, nil
+}
+
 // ----
 
 func (it *SQLManager) CreateUserTable() {
