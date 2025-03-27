@@ -11,16 +11,16 @@ import (
 
 var secretKEY = []byte(os.Getenv("secret_key"))
 
-// Gerador de JWT
-func GenerateJWT(userID, userEmail string) (string, error) {
+func GenerateJWT(userID, userEmail, userRole string) (string, error) {
 
 	// formato do JWT : Header.Payload.Signature
 	var tokenString, err = jwt.NewWithClaims(
 		jwt.SigningMethodHS256, // = Header
 
 		jwt.MapClaims{ // = Payload
-			"userId": userID,
+			"userID": userID,
 			"iss":    userEmail,
+			"role":   userRole,
 			"exp":    time.Now().Add(time.Hour * 2).Unix(), // expirar: tempo atual + 2 horas
 		},
 	).SignedString(secretKEY) // = Signature
@@ -28,8 +28,14 @@ func GenerateJWT(userID, userEmail string) (string, error) {
 	return tokenString, err
 }
 
-func ValidateJWT(tokenString string) (bool, jwt.MapClaims) {
-	tokenString = _RemoveBearerPrefix(tokenString)
+type ModelClaims struct {
+	UserID string
+	Iss    string
+	Role   string
+}
+
+func ValidateJWT(tokenString string) (bool, ModelClaims) {
+	tokenString = RemoveBearerPrefix(tokenString)
 
 	// Analisa o Token
 	var token, err = jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
@@ -40,22 +46,25 @@ func ValidateJWT(tokenString string) (bool, jwt.MapClaims) {
 		// utiliza a `secretKEY` para validação
 		return secretKEY, nil
 	})
+
 	if err != nil {
 		fmt.Println(err)
-		return false, map[string]any{}
+		return false, ModelClaims{}
 	}
 
 	if claims, ok := token.Claims.(jwt.MapClaims); ok && token.Valid {
-		fmt.Println("claims: ", claims)
-		return true, claims
+		return true, ModelClaims{
+			UserID: claims["userID"].(string),
+			Iss:    claims["iss"].(string),
+			Role:   claims["role"].(string),
+		}
 	} else {
-		fmt.Println("condição inválida")
-		return false, map[string]any{}
+		return false, ModelClaims{}
 	}
 }
 
 // Remover o prefixo `Bearer`
-func _RemoveBearerPrefix(TokenString string) string {
+func RemoveBearerPrefix(TokenString string) string {
 	if strings.HasPrefix(TokenString, "Bearer ") {
 		TokenString = strings.TrimPrefix(TokenString, "Bearer ")
 	}

@@ -4,6 +4,7 @@ package controller
 import (
 	"app/model"
 	"app/useCase"
+	"app/userAuth"
 	"fmt"
 	"net/http"
 	"strconv"
@@ -22,12 +23,29 @@ func NewUserController(useCase useCase.UserUseCase) *UserController {
 // -- Methods
 
 func (it *UserController) ReadUser(ctx *gin.Context) {
-	request := ctx.Param("id")
-	if request == "" {
-		ctx.JSON(http.StatusBadRequest, "Id não fornecido")
+	// tratamento da body request
+	var requestJWT = ctx.Request.Header.Get("Authorization")
+
+	// Validação do JWT
+	validate, claims := userAuth.ValidateJWT(requestJWT)
+	if validate == false {
+		ctx.JSON(http.StatusUnauthorized, "JWT Não validado")
+		return
 	}
 
-	idParam, err := strconv.Atoi(request)
+	// Verificação do Token em Sessão em relação do JWT fornecido
+	userInSession, err := userAuth.GetUserSession(claims.UserID)
+	if err != nil {
+		fmt.Println("Get User invalid:", err)
+		ctx.JSON(http.StatusInternalServerError, err)
+		return
+	}
+	if userAuth.RemoveBearerPrefix(requestJWT) != userInSession.JWT {
+		ctx.JSON(http.StatusUnauthorized, "Token de autorização inválido")
+		return
+	}
+
+	idParam, err := strconv.Atoi(claims.UserID)
 	if err != nil {
 		ctx.JSON(http.StatusBadRequest, "Id inválido")
 	}
@@ -36,7 +54,33 @@ func (it *UserController) ReadUser(ctx *gin.Context) {
 }
 
 func (it *UserController) ReadAllUser(ctx *gin.Context) {
-	var response, err = it.useCase.ReadAllUser()
+	var requestJWT = ctx.Request.Header.Get("Authorization")
+
+	// Validação do JWT
+	validate, claims := userAuth.ValidateJWT(requestJWT)
+	if validate == false {
+		ctx.JSON(http.StatusUnauthorized, "JWT Não validado")
+		return
+	}
+
+	if claims.Role != "admin" {
+		ctx.JSON(401, "Acesso não autorizado")
+		return
+	}
+
+	// Verificação do Token em Sessão em relação do JWT fornecido
+	userInSession, err := userAuth.GetUserSession(claims.UserID)
+	if err != nil {
+		fmt.Println("Get User invalid:", err)
+		ctx.JSON(http.StatusInternalServerError, err)
+		return
+	}
+	if userAuth.RemoveBearerPrefix(requestJWT) != userInSession.JWT {
+		ctx.JSON(http.StatusUnauthorized, "Token de autorização inválido")
+		return
+	}
+
+	response, err := it.useCase.ReadAllUser()
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, err)
 		return

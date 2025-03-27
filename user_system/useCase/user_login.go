@@ -1,6 +1,7 @@
 package useCase
 
 import (
+	"app/pkg/security"
 	u "app/pkg/utils"
 	"app/userAuth"
 	"fmt"
@@ -13,11 +14,12 @@ func (it *UserUseCase) UserLogin(UserEmail string, UserPassword string) (string,
 		return "", err
 	}
 
-	if UserPassword != UserDB.Password {
-		return "", fmt.Errorf("Senha incorreta!")
+	err = security.CompareHashPassword(UserDB.Password, UserPassword)
+	if err != nil {
+		return "", err
 	}
 
-	stringJWT, err := userAuth.GenerateJWT(u.ToString(UserDB.Id), UserDB.Email)
+	stringJWT, err := userAuth.GenerateJWT(u.ToString(UserDB.Id), UserDB.Email, UserDB.Role)
 	if err != nil {
 		fmt.Println("Erro: ", err)
 		return "", err

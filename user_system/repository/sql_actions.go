@@ -2,6 +2,7 @@ package repository
 
 import (
 	"app/model"
+	"app/pkg/security"
 	"database/sql"
 	"fmt"
 )
@@ -19,7 +20,12 @@ func NewSQLManager(db *sql.DB) *SQLManager {
 
 func (it *SQLManager) UserSaveSQL(info model.User) error {
 	var query = `INSERT INTO users (name, email, password, role) VALUES ($1,$2,$3,$4)`
-	_, err := it.DB.Exec(query, info.Name, info.Email, info.Password, info.Role)
+	hashPassword, err := security.HashPassword(info.Password)
+	if err != nil {
+		return fmt.Errorf("Error Bycript HashPassword")
+	}
+
+	_, err = it.DB.Exec(query, info.Name, info.Email, hashPassword, info.Role)
 	if err != nil {
 		fmt.Printf("Erro: %v", err)
 		return err
@@ -84,8 +90,12 @@ func (it *SQLManager) ReadAllUserSQL() ([]model.User, error) {
 
 func (it *SQLManager) UserUpdateSQL(info model.User) error {
 	var query = `UPDATE users SET name=$1, password=$2 WHERE id = $3`
+	newPassword, err := security.HashPassword(info.Password)
+	if err != nil {
+		return fmt.Errorf("Error Bycript HashPassword")
+	}
 
-	var _, err = it.DB.Exec(query, info.Name, info.Password, info.Id)
+	_, err = it.DB.Exec(query, info.Name, newPassword, info.Id)
 	if err != nil {
 		fmt.Println("Erro ao atulizar campo da table: ", err)
 		return err
