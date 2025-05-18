@@ -1,7 +1,7 @@
 package controller
 
 import (
-	"app/internal/userAuth"
+	"app/internal/userauth"
 	"fmt"
 	"net/http"
 
@@ -34,21 +34,21 @@ func (it *UserController) LogoutUser(ctx *gin.Context) {
 	var requestJWT = ctx.Request.Header.Get("Authorization")
 
 	// Validação do JWT
-	validate, claims := userAuth.ValidateJWT(requestJWT)
+	validate, claims := userauth.ValidateJWT(requestJWT)
 	if validate == false {
 		ctx.JSON(http.StatusUnauthorized, "JWT Não validado")
 		return
 	}
 
 	// Verificação do Token em Sessão em relação do JWT fornecido
-	userInSession, err := userAuth.GetUserSession(claims.UserID)
+	userInSession, err := userauth.GetUserSession(claims.UserID)
 	if err != nil {
 		fmt.Println("Get User invalid:", err)
 		ctx.JSON(http.StatusInternalServerError, err)
 		return
 	}
 
-	if userAuth.RemoveBearerPrefix(requestJWT) != userInSession.JWT {
+	if userauth.RemoveBearerPrefix(requestJWT) != userInSession.JWT {
 		ctx.JSON(http.StatusUnauthorized, "Token de autorização inválido")
 		return
 	}

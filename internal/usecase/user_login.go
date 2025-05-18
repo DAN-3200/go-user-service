@@ -1,14 +1,13 @@
-package useCase
+package usecase
 
 import (
-	"app/internal/userAuth"
+	"app/internal/userauth"
 	"app/pkg/security"
 	"fmt"
 	"strconv"
 )
 
 func (it *UserUseCase) UserLogin(UserEmail string, UserPassword string) (string, error) {
-
 	UserDB, err := it.DB.LoginUserSQL(UserEmail)
 	if err != nil {
 		return "", err
@@ -19,19 +18,20 @@ func (it *UserUseCase) UserLogin(UserEmail string, UserPassword string) (string,
 		return "", err
 	}
 
-	stringJWT, err := userAuth.GenerateJWT(strconv.Itoa(UserDB.Id), UserDB.Email, UserDB.Role)
+	stringJWT, err := userauth.GenerateJWT(strconv.Itoa(UserDB.Id), UserDB.Email, UserDB.Role)
 	if err != nil {
 		fmt.Println("Erro: ", err)
 		return "", err
 	}
 
-	err = userAuth.SetUserSession(userAuth.UserSession{
+	err = userauth.SetUserSession(userauth.UserSession{
 		Id:    UserDB.Id,
 		Name:  UserDB.Name,
 		Email: UserDB.Email,
 		Role:  UserDB.Role,
 		JWT:   stringJWT,
 	})
+	
 	if err != nil {
 		fmt.Println("Erro: ", err)
 		return "", err
@@ -41,7 +41,7 @@ func (it *UserUseCase) UserLogin(UserEmail string, UserPassword string) (string,
 }
 
 func (it *UserUseCase) UserLogout(id string) error {
-	err := userAuth.LogoutUserSession(id)
+	err := userauth.LogoutUserSession(id)
 	if err != nil {
 		return err
 	}

@@ -4,7 +4,7 @@ import (
 	"app/internal/controller"
 	"app/internal/db"
 	"app/internal/repository"
-	"app/internal/useCase"
+	"app/internal/usecase"
 
 	"github.com/gin-gonic/gin"
 )
@@ -18,7 +18,7 @@ func RunServer() {
 	var dbManager = repository.NewSQLManager(ConnDB)
 	// dbManager.CreateUserTable()
 
-	var setUseCase = useCase.NewUserUseCase(dbManager)
+	var setUseCase = usecase.NewUserUseCase(dbManager)
 	var setController = controller.NewUserController(*setUseCase)
 	_UserRoutes(server, *setController)
 

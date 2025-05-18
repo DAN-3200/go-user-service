@@ -1,5 +1,5 @@
 // recebe a requisição já tratada
-package useCase
+package usecase
 
 import (
 	"app/internal/contracts"

@@ -1,5 +1,5 @@
-package userAuth
-
+package userauth
+// Necessita do redis-server ativo
 import (
 	"app/internal/db"
 	"context"

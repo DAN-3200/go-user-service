@@ -3,8 +3,9 @@ package controller
 
 import (
 	"app/internal/model"
-	"app/internal/useCase"
-	"app/internal/userAuth"
+	"app/internal/mytypes"
+	"app/internal/usecase"
+	"app/internal/userauth"
 	"fmt"
 	"net/http"
 	"strconv"
@@ -13,10 +14,10 @@ import (
 )
 
 type UserController struct {
-	useCase useCase.UserUseCase
+	useCase usecase.UserUseCase
 }
 
-func NewUserController(useCase useCase.UserUseCase) *UserController {
+func NewUserController(useCase usecase.UserUseCase) *UserController {
 	return &UserController{useCase}
 }
 
@@ -27,20 +28,21 @@ func (it *UserController) ReadUser(ctx *gin.Context) {
 	var requestJWT = ctx.Request.Header.Get("Authorization")
 
 	// Validação do JWT
-	validate, claims := userAuth.ValidateJWT(requestJWT)
+	validate, claims := userauth.ValidateJWT(requestJWT)
 	if validate == false {
 		ctx.JSON(http.StatusUnauthorized, "JWT Não validado")
 		return
 	}
 
 	// Verificação do Token em Sessão em relação do JWT fornecido
-	userInSession, err := userAuth.GetUserSession(claims.UserID)
+	userInSession, err := userauth.GetUserSession(claims.UserID)
 	if err != nil {
 		fmt.Println("Get User invalid:", err)
 		ctx.JSON(http.StatusInternalServerError, err)
 		return
 	}
-	if userAuth.RemoveBearerPrefix(requestJWT) != userInSession.JWT {
+
+	if userauth.RemoveBearerPrefix(requestJWT) != userInSession.JWT {
 		ctx.JSON(http.StatusUnauthorized, "Token de autorização inválido")
 		return
 	}
@@ -49,6 +51,7 @@ func (it *UserController) ReadUser(ctx *gin.Context) {
 	if err != nil {
 		ctx.JSON(http.StatusBadRequest, "Id inválido")
 	}
+
 	var response = it.useCase.UserRead(idParam)
 	ctx.JSON(http.StatusOK, response)
 }
@@ -57,7 +60,7 @@ func (it *UserController) ReadAllUser(ctx *gin.Context) {
 	var requestJWT = ctx.Request.Header.Get("Authorization")
 
 	// Validação do JWT
-	validate, claims := userAuth.ValidateJWT(requestJWT)
+	validate, claims := userauth.ValidateJWT(requestJWT)
 	if validate == false {
 		ctx.JSON(http.StatusUnauthorized, "JWT Não validado")
 		return
@@ -69,13 +72,13 @@ func (it *UserController) ReadAllUser(ctx *gin.Context) {
 	}
 
 	// Verificação do Token em Sessão em relação do JWT fornecido
-	userInSession, err := userAuth.GetUserSession(claims.UserID)
+	userInSession, err := userauth.GetUserSession(claims.UserID)
 	if err != nil {
 		fmt.Println("Get User invalid:", err)
 		ctx.JSON(http.StatusInternalServerError, err)
 		return
 	}
-	if userAuth.RemoveBearerPrefix(requestJWT) != userInSession.JWT {
+	if userauth.RemoveBearerPrefix(requestJWT) != userInSession.JWT {
 		ctx.JSON(http.StatusUnauthorized, "Token de autorização inválido")
 		return
 	}
@@ -95,8 +98,16 @@ func (it *UserController) CreateUser(ctx *gin.Context) {
 		ctx.JSON(http.StatusBadRequest, "Erro na leitura da requisição")
 		return
 	}
+	err := request.Validate()
+	if err != nil {
+		ctx.JSON(http.StatusBadRequest, mytypes.DetailsError{
+			HttpStatus: http.StatusBadRequest,
+			Error:      err.Error(),
+		})
+		return
+	}
 
-	var err = it.useCase.UserCreate(request)
+	err = it.useCase.UserCreate(request)
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, err)
 		return
@@ -105,16 +116,43 @@ func (it *UserController) CreateUser(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, "Ok")
 }
 
-// tem erro aqui
 func (it *UserController) UpdateUser(ctx *gin.Context) {
 	var request model.User
 	if err := ctx.BindJSON(&request); err != nil {
 		fmt.Println("Erro na leitura da requisição")
-		ctx.JSON(http.StatusBadRequest, "Erro na leitura da requisição")
+		ctx.JSON(http.StatusBadRequest, mytypes.DetailsError{
+			HttpStatus: http.StatusBadRequest,
+			Error:      "Erro na leitura da requisição",
+		})
 		return
 	}
 
-	var err = it.useCase.UserUpdate(request)
+	var requestJWT = ctx.Request.Header.Get("Authorization")
+
+	validate, claims := userauth.ValidateJWT(requestJWT)
+	if validate == false {
+		ctx.JSON(http.StatusUnauthorized, "JWT Não validado")
+		return
+	}
+
+	userInSession, err := userauth.GetUserSession(claims.UserID)
+	if err != nil {
+		fmt.Println("Get User invalid:", err)
+		ctx.JSON(http.StatusInternalServerError, err)
+		return
+	}
+
+	if claims.Role != "admin" && request.Id != userInSession.Id {
+		ctx.JSON(401, "Acesso não autorizado")
+		return
+	}
+
+	if userauth.RemoveBearerPrefix(requestJWT) != userInSession.JWT {
+		ctx.JSON(http.StatusUnauthorized, "Token de autorização inválido")
+		return
+	}
+
+	err = it.useCase.UserUpdate(request)
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, err)
 		return
@@ -131,7 +169,33 @@ func (it *UserController) DeleteUser(ctx *gin.Context) {
 		return
 	}
 
-	var err = it.useCase.UserDelete(request.Id)
+	var requestJWT = ctx.Request.Header.Get("Authorization")
+
+	validate, claims := userauth.ValidateJWT(requestJWT)
+	if validate == false {
+		ctx.JSON(http.StatusUnauthorized, "JWT Não validado")
+		return
+	}
+
+	userInSession, err := userauth.GetUserSession(claims.UserID)
+	if err != nil {
+		fmt.Println("Get User invalid:", err)
+		ctx.JSON(http.StatusInternalServerError, err)
+		return
+	}
+
+	if claims.Role != "admin" && request.Id != userInSession.Id {
+		ctx.JSON(401, "Acesso não autorizado")
+		return
+	}
+
+	if userauth.RemoveBearerPrefix(requestJWT) != userInSession.JWT {
+		ctx.JSON(http.StatusUnauthorized, "Token de autorização inválido")
+		return
+	}
+
+	err = it.useCase.UserDelete(request.Id)
+	it.useCase.UserLogout(strconv.Itoa(request.Id))
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, err)
 		return

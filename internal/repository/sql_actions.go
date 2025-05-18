@@ -114,8 +114,6 @@ func (it *SQLManager) UserDeleteSQL(infoID int) error {
 	return nil
 }
 
-// criar Login Consulta
-
 func (it *SQLManager) LoginUserSQL(UserEmail string) (model.User, error) {
 	var query = `SELECT id, name, password, email, role FROM users WHERE email=$1;`
 
@@ -141,8 +139,6 @@ func (it *SQLManager) LoginUserSQL(UserEmail string) (model.User, error) {
 
 	return mU, nil
 }
-
-// ----
 
 func (it *SQLManager) CreateUserTable() {
 	var _, err = it.DB.Exec(`
