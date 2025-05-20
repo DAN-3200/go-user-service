@@ -1,0 +1,7 @@
+vendor/
+*.test
+*.exe
+*.log
+dump.rdb
+temp/
+docker-compose.yml

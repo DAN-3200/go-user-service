@@ -140,7 +140,7 @@ func (it *SQLManager) LoginUserSQL(UserEmail string) (model.User, error) {
 	return mU, nil
 }
 
-func (it *SQLManager) CreateUserTable() {
+func (it *SQLManager) CreateUserTable() error {
 	var _, err = it.DB.Exec(`
 		CREATE TABLE users (
 			id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -153,6 +153,7 @@ func (it *SQLManager) CreateUserTable() {
 	)
 	if err != nil {
 		fmt.Println("Erro", err)
-		return
+		return err
 	}
+	return nil
 }

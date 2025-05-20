@@ -11,7 +11,7 @@ import (
 // assert : averigua e deixa continuar
 // require : averigua e não deixa continuar
 
-func TestModel(t *testing.T) {
+func Test_UserValidate(t *testing.T) {
 	tempoAtual := time.Now().Format("0000-00-00 00:00:00")
 	user := model.NewUser(
 		"person",
@@ -21,14 +21,25 @@ func TestModel(t *testing.T) {
 		tempoAtual,
 	)
 
-	expect := &model.User{
-		0,
-		"person",
-		"person@gmail.com",
+	err := user.Validate()
+	require.NoError(t, err, err)
+}
+
+func Test_LoginValidate(t *testing.T) {
+	login := model.LoginFields{
+		"person@hotmail.com",
 		"person321",
-		"user",
-		tempoAtual,
 	}
 
-	require.Equal(t, expect, user)
+	err := login.Validate()
+	require.NoError(t, err, err)
+}
+func Test_LoginValidateFields(t *testing.T) {
+	login := model.LoginFields{
+		"person@hotmail.com",
+		"person",
+	}
+
+	errList, err := login.ValidateFields()
+	require.NoError(t, err, errList)
 }

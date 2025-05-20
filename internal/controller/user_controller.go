@@ -23,6 +23,31 @@ func NewUserController(useCase usecase.UserUseCase) *UserController {
 
 // -- Methods
 
+func (it *UserController) CreateUser(ctx *gin.Context) {
+	var request model.User
+	if err := ctx.BindJSON(&request); err != nil {
+		fmt.Println("Erro na leitura da requisição")
+		ctx.JSON(http.StatusBadRequest, "Erro na leitura da requisição")
+		return
+	}
+	err := request.Validate()
+	if err != nil {
+		ctx.JSON(http.StatusBadRequest, mytypes.DetailsError{
+			HttpStatus: http.StatusBadRequest,
+			Error:      err.Error(),
+		})
+		return
+	}
+
+	err = it.useCase.UserCreate(request)
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, err)
+		return
+	}
+
+	ctx.JSON(http.StatusOK, "Ok")
+}
+
 func (it *UserController) ReadUser(ctx *gin.Context) {
 	// tratamento da body request
 	var requestJWT = ctx.Request.Header.Get("Authorization")
@@ -91,31 +116,6 @@ func (it *UserController) ReadAllUser(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, response)
 }
 
-func (it *UserController) CreateUser(ctx *gin.Context) {
-	var request model.User
-	if err := ctx.BindJSON(&request); err != nil {
-		fmt.Println("Erro na leitura da requisição")
-		ctx.JSON(http.StatusBadRequest, "Erro na leitura da requisição")
-		return
-	}
-	err := request.Validate()
-	if err != nil {
-		ctx.JSON(http.StatusBadRequest, mytypes.DetailsError{
-			HttpStatus: http.StatusBadRequest,
-			Error:      err.Error(),
-		})
-		return
-	}
-
-	err = it.useCase.UserCreate(request)
-	if err != nil {
-		ctx.JSON(http.StatusInternalServerError, err)
-		return
-	}
-
-	ctx.JSON(http.StatusOK, "Ok")
-}
-
 func (it *UserController) UpdateUser(ctx *gin.Context) {
 	var request model.User
 	if err := ctx.BindJSON(&request); err != nil {
@@ -123,6 +123,15 @@ func (it *UserController) UpdateUser(ctx *gin.Context) {
 		ctx.JSON(http.StatusBadRequest, mytypes.DetailsError{
 			HttpStatus: http.StatusBadRequest,
 			Error:      "Erro na leitura da requisição",
+		})
+		return
+	}
+
+	err := request.Validate()
+	if err != nil {
+		ctx.JSON(http.StatusBadRequest, mytypes.DetailsError{
+			HttpStatus: http.StatusBadRequest,
+			Error:      err.Error(),
 		})
 		return
 	}
@@ -162,12 +171,8 @@ func (it *UserController) UpdateUser(ctx *gin.Context) {
 }
 
 func (it *UserController) DeleteUser(ctx *gin.Context) {
-	var request struct{ Id int }
-	if err := ctx.BindJSON(&request); err != nil {
-		fmt.Println("Erro na leitura da requisição")
-		ctx.JSON(http.StatusBadRequest, "Erro na leitura da requisição")
-		return
-	}
+	paramID := ctx.Param("id")
+	pID, _ := strconv.Atoi(paramID)
 
 	var requestJWT = ctx.Request.Header.Get("Authorization")
 
@@ -184,7 +189,7 @@ func (it *UserController) DeleteUser(ctx *gin.Context) {
 		return
 	}
 
-	if claims.Role != "admin" && request.Id != userInSession.Id {
+	if claims.Role != "admin" && pID != userInSession.Id {
 		ctx.JSON(401, "Acesso não autorizado")
 		return
 	}
@@ -194,13 +199,12 @@ func (it *UserController) DeleteUser(ctx *gin.Context) {
 		return
 	}
 
-	err = it.useCase.UserDelete(request.Id)
-	it.useCase.UserLogout(strconv.Itoa(request.Id))
+	err = it.useCase.UserDelete(pID)
+	it.useCase.UserLogout(strconv.Itoa(pID))
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, err)
 		return
 	}
 
-	ctx.JSON(http.StatusOK, "Ok")
-
+	ctx.JSON(http.StatusOK, "User Deleted")
 }

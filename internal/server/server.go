@@ -20,17 +20,17 @@ func RunServer() {
 
 	var setUseCase = usecase.NewUserUseCase(dbManager)
 	var setController = controller.NewUserController(*setUseCase)
-	_UserRoutes(server, *setController)
+	UserRoutes(server, *setController)
 
 	server.Run(":3000")
 }
 
-func _UserRoutes(server *gin.Engine, useController controller.UserController) {
+func UserRoutes(server *gin.Engine, useController controller.UserController) {
 	server.GET("/readUser/:id", useController.ReadUser)
 	server.GET("/readAllUser", useController.ReadAllUser)
 	server.POST("/createUser", useController.CreateUser)
 	server.PUT("/updateUser", useController.UpdateUser)
-	server.DELETE("/deleteUser", useController.DeleteUser)
+	server.DELETE("/deleteUser/:id", useController.DeleteUser)
 
 	// Login
 	server.POST("/loginUser", useController.LoginUser)
