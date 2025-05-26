@@ -3,7 +3,6 @@ package controller
 import (
 	"app/internal/model"
 	"app/internal/mytypes"
-	"app/internal/userauth"
 	"fmt"
 	"net/http"
 
@@ -38,31 +37,10 @@ func (it *UserController) LoginUser(ctx *gin.Context) {
 }
 
 func (it *UserController) LogoutUser(ctx *gin.Context) {
-	// tratamento da body request
-	var requestJWT = ctx.Request.Header.Get("Authorization")
-
-	// Validação do JWT
-	validate, claims := userauth.ValidateJWT(requestJWT)
-	if validate == false {
-		ctx.JSON(http.StatusUnauthorized, "JWT Não validado")
-		return
-	}
-
-	// Verificação do Token em Sessão em relação do JWT fornecido
-	userInSession, err := userauth.GetUserSession(claims.UserID)
-	if err != nil {
-		fmt.Println("Get User invalid:", err)
-		ctx.JSON(http.StatusInternalServerError, err)
-		return
-	}
-
-	if userauth.RemoveBearerPrefix(requestJWT) != userInSession.JWT {
-		ctx.JSON(http.StatusUnauthorized, "Token de autorização inválido")
-		return
-	}
-
+	userID, _ := ctx.Get("userID")
+	
 	// Remoção do User da sessão
-	err = it.useCase.UserLogout(claims.UserID)
+	err := it.useCase.UserLogout(userID.(string))
 	if err != nil {
 		fmt.Println(err)
 		ctx.JSON(http.StatusInternalServerError, err)

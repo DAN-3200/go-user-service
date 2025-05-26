@@ -28,7 +28,7 @@ func (u *User) Validate() error {
 	if !strings.HasSuffix(u.Email, "@gmail.com") && !strings.HasSuffix(u.Email, "@hotmail.com") && !strings.HasSuffix(u.Email, "@outlook.com") {
 		return fmt.Errorf("email invalid")
 	}
-	if u.Password == "" || len(u.Password) > 20  {
+	if u.Password == "" || len(u.Password) > 20 || len(u.Password) < 5  {
 		return fmt.Errorf("password is invalid")
 	}
 	if u.Role == "" {

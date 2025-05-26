@@ -7,7 +7,7 @@ import (
 // [https://redis.io/docs/latest/develop/clients/go/]
 func Conn_Redis() *redis.Client {
 	var useDB = redis.NewClient(&redis.Options{
-		Addr:     "redis:6379",
+		Addr:     "localhost:6379",
 		Password: "",
 		DB:       0,
 	})

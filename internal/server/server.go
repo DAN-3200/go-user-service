@@ -3,6 +3,7 @@ package server
 import (
 	"app/internal/controller"
 	"app/internal/db"
+	"app/internal/middlewares"
 	"app/internal/repository"
 	"app/internal/usecase"
 
@@ -26,13 +27,13 @@ func RunServer() {
 }
 
 func UserRoutes(server *gin.Engine, useController controller.UserController) {
-	server.GET("/readUser/:id", useController.ReadUser)
-	server.GET("/readAllUser", useController.ReadAllUser)
 	server.POST("/createUser", useController.CreateUser)
+	server.GET("/readUser/:id", middlewares.AuthMiddleware(), useController.ReadUser)
+	server.GET("/readAllUser", useController.ReadAllUser)
 	server.PUT("/updateUser", useController.UpdateUser)
 	server.DELETE("/deleteUser/:id", useController.DeleteUser)
 
 	// Login
 	server.POST("/loginUser", useController.LoginUser)
-	server.POST("/logoutUser", useController.LogoutUser)
+	server.POST("/logoutUser", middlewares.AuthForLogout(), useController.LogoutUser)
 }

@@ -18,11 +18,11 @@ import (
 
 func Test_CreateToDelete(t *testing.T) {
 	// layers
-	conn, err := sql.Open("sqlite3", "dbtest.db")
+	conn, err := sql.Open("sqlite3", ":memory:")
 	assert.NoError(t, err, err)
 	repo := repository.NewSQLManager(conn)
 	err = repo.CreateUserTable()
-	assert.NoError(t, err, err)
+	require.NoError(t, err, err)
 	service := usecase.NewUserUseCase(repo)
 
 	// test service.methods

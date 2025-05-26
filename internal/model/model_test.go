@@ -34,6 +34,7 @@ func Test_LoginValidate(t *testing.T) {
 	err := login.Validate()
 	require.NoError(t, err, err)
 }
+
 func Test_LoginValidateFields(t *testing.T) {
 	login := model.LoginFields{
 		"person@hotmail.com",

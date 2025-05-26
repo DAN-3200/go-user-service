@@ -31,6 +31,7 @@ func (it *UserController) CreateUser(ctx *gin.Context) {
 		return
 	}
 	err := request.Validate()
+	
 	if err != nil {
 		ctx.JSON(http.StatusBadRequest, mytypes.DetailsError{
 			HttpStatus: http.StatusBadRequest,
@@ -49,35 +50,10 @@ func (it *UserController) CreateUser(ctx *gin.Context) {
 }
 
 func (it *UserController) ReadUser(ctx *gin.Context) {
-	// tratamento da body request
-	var requestJWT = ctx.Request.Header.Get("Authorization")
+	paramID := ctx.Param("id")
+	pID, _ := strconv.Atoi(paramID)
 
-	// Validação do JWT
-	validate, claims := userauth.ValidateJWT(requestJWT)
-	if validate == false {
-		ctx.JSON(http.StatusUnauthorized, "JWT Não validado")
-		return
-	}
-
-	// Verificação do Token em Sessão em relação do JWT fornecido
-	userInSession, err := userauth.GetUserSession(claims.UserID)
-	if err != nil {
-		fmt.Println("Get User invalid:", err)
-		ctx.JSON(http.StatusInternalServerError, err)
-		return
-	}
-
-	if userauth.RemoveBearerPrefix(requestJWT) != userInSession.JWT {
-		ctx.JSON(http.StatusUnauthorized, "Token de autorização inválido")
-		return
-	}
-
-	idParam, err := strconv.Atoi(claims.UserID)
-	if err != nil {
-		ctx.JSON(http.StatusBadRequest, "Id inválido")
-	}
-
-	var response = it.useCase.UserRead(idParam)
+	var response = it.useCase.UserRead(pID)
 	ctx.JSON(http.StatusOK, response)
 }
 
