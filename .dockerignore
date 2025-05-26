@@ -5,3 +5,4 @@ vendor/
 dump.rdb
 temp/
 docker-compose.yml
+tmp/

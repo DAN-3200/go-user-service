@@ -3,8 +3,11 @@ package controller
 import (
 	"app/internal/model"
 	"app/internal/mytypes"
+	"app/internal/userauth"
 	"fmt"
+	"log"
 	"net/http"
+	"strconv"
 
 	"github.com/gin-gonic/gin"
 )
@@ -37,10 +40,16 @@ func (it *UserController) LoginUser(ctx *gin.Context) {
 }
 
 func (it *UserController) LogoutUser(ctx *gin.Context) {
-	userID, _ := ctx.Get("userID")
-	
+	value, _ := ctx.Get("user_session")
+	userInfo, ok := value.(*userauth.UserSession)
+	if !ok {
+		log.Println("Falha na conversão para userauth.UserSession")
+		ctx.AbortWithStatusJSON(http.StatusInternalServerError, "Erro interno no servidor")
+		return
+	}
+
 	// Remoção do User da sessão
-	err := it.useCase.UserLogout(userID.(string))
+	err := it.useCase.UserLogout(strconv.Itoa(userInfo.Id))
 	if err != nil {
 		fmt.Println(err)
 		ctx.JSON(http.StatusInternalServerError, err)

@@ -28,12 +28,12 @@ func RunServer() {
 
 func UserRoutes(server *gin.Engine, useController controller.UserController) {
 	server.POST("/createUser", useController.CreateUser)
-	server.GET("/readUser/:id", middlewares.AuthMiddleware(), useController.ReadUser)
-	server.GET("/readAllUser", useController.ReadAllUser)
-	server.PUT("/updateUser", useController.UpdateUser)
-	server.DELETE("/deleteUser/:id", useController.DeleteUser)
+	server.GET("/readUser/:id", middlewares.AuthJWT(false), useController.ReadUser)
+	server.GET("/readAllUser", middlewares.AuthJWT(true), useController.ReadAllUser)
+	server.PUT("/updateUser", middlewares.AuthJWT(true), useController.UpdateUser)
+	server.DELETE("/deleteUser/:id", middlewares.AuthJWT(true), useController.DeleteUser)
 
 	// Login
 	server.POST("/loginUser", useController.LoginUser)
-	server.POST("/logoutUser", middlewares.AuthForLogout(), useController.LogoutUser)
+	server.POST("/logoutUser", middlewares.AuthJWT(true), useController.LogoutUser)
 }
