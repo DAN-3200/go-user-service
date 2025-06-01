@@ -47,7 +47,7 @@ func (it *UserController) CreateUser(ctx *gin.Context) {
 		return
 	}
 
-	ctx.JSON(http.StatusOK, "Ok")
+	ctx.JSON(http.StatusCreated, "Ok")
 }
 
 func (it *UserController) ReadUser(ctx *gin.Context) {
@@ -68,13 +68,13 @@ func (it *UserController) ReadAllUser(ctx *gin.Context) {
 	}
 
 	if userInfo.Role != "admin" {
-		ctx.JSON(401, "Acesso não autorizado")
+		ctx.JSON(403, "Acesso não autorizado")
 		return
 	}
 
 	response, err := it.useCase.ReadAllUser()
 	if err != nil {
-		ctx.JSON(http.StatusInternalServerError, err)
+		ctx.JSON(http.StatusNotFound, err)
 		return
 	}
 	ctx.JSON(http.StatusOK, response)
@@ -109,7 +109,7 @@ func (it *UserController) UpdateUser(ctx *gin.Context) {
 	}
 
 	if userInfo.Role != "admin" && request.Id != userInfo.Id {
-		ctx.JSON(401, "Acesso não autorizado")
+		ctx.JSON(403, "Acesso não autorizado")
 		return
 	}
 
@@ -135,7 +135,7 @@ func (it *UserController) DeleteUser(ctx *gin.Context) {
 	}
 
 	if userInfo.Role != "admin" && pID != userInfo.Id {
-		ctx.JSON(401, "Acesso não autorizado")
+		ctx.JSON(403, "Acesso não autorizado")
 		return
 	}
 
@@ -146,5 +146,5 @@ func (it *UserController) DeleteUser(ctx *gin.Context) {
 		return
 	}
 
-	ctx.JSON(http.StatusOK, "User Deleted")
+	ctx.JSON(http.StatusNoContent, "User Deleted")
 }

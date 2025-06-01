@@ -24,7 +24,7 @@ func AuthJWT(SaveSession bool) gin.HandlerFunc {
 		userInSession, err := userauth.GetUserSession(claims.UserID)
 		if err != nil {
 			// fmt.Println("No user in session:", err)
-			ctx.AbortWithStatusJSON(http.StatusInternalServerError, "No user in session")
+			ctx.AbortWithStatusJSON(http.StatusUnauthorized, "No user in session")
 
 			return
 		}
@@ -34,8 +34,9 @@ func AuthJWT(SaveSession bool) gin.HandlerFunc {
 
 			return
 		}
-
-		ctx.Set("user_session", userInSession)
+		if SaveSession {
+			ctx.Set("user_session", userInSession)
+		}
 
 		ctx.Next()
 	}

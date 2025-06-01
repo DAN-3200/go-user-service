@@ -13,11 +13,12 @@ import (
 func RunServer() {
 	var server = gin.Default()
 	// SQL Database Connection
-	var ConnDB = db.Conn_Sqlite()
+
+	var ConnDB = db.Conn_Postgres()
 	defer ConnDB.Close()
 
 	var dbManager = repository.NewSQLManager(ConnDB)
-	// dbManager.CreateUserTable()
+	dbManager.CreateUserTable()
 
 	var setUseCase = usecase.NewUserUseCase(dbManager)
 	var setController = controller.NewUserController(*setUseCase)

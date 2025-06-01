@@ -31,7 +31,7 @@ func (it *UserUseCase) UserLogin(UserEmail string, UserPassword string) (string,
 		Role:  UserDB.Role,
 		JWT:   stringJWT,
 	})
-	
+
 	if err != nil {
 		fmt.Println("Erro: ", err)
 		return "", err

@@ -16,7 +16,7 @@ func (it *UserController) LoginUser(ctx *gin.Context) {
 	var request model.LoginFields
 	if err := ctx.BindJSON(&request); err != nil {
 		fmt.Println("Erro na leitura da requisição")
-		ctx.JSON(http.StatusBadRequest, "Erro na leitura da requisição")
+		ctx.JSON(http.StatusInternalServerError, "Erro na leitura da requisição")
 		return
 	}
 
@@ -32,11 +32,11 @@ func (it *UserController) LoginUser(ctx *gin.Context) {
 	stringJWT, err := it.useCase.UserLogin(request.Email, request.Password)
 	if err != nil {
 		fmt.Println(err)
-		ctx.JSON(http.StatusInternalServerError, err)
+		ctx.JSON(http.StatusUnauthorized, err)
 		return
 	}
 
-	ctx.JSON(http.StatusOK, stringJWT)
+	ctx.JSON(http.StatusOK, any(stringJWT))
 }
 
 func (it *UserController) LogoutUser(ctx *gin.Context) {
@@ -52,7 +52,7 @@ func (it *UserController) LogoutUser(ctx *gin.Context) {
 	err := it.useCase.UserLogout(strconv.Itoa(userInfo.Id))
 	if err != nil {
 		fmt.Println(err)
-		ctx.JSON(http.StatusInternalServerError, err)
+		ctx.JSON(http.StatusUnauthorized, err)
 		return
 	}
 

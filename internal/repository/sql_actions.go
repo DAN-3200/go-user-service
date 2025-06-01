@@ -142,8 +142,8 @@ func (it *SQLManager) LoginUserSQL(UserEmail string) (model.User, error) {
 
 func (it *SQLManager) CreateUserTable() error {
 	var _, err = it.DB.Exec(`
-		CREATE TABLE users (
-			id INTEGER PRIMARY KEY AUTOINCREMENT,
+		CREATE TABLE IF NOT EXISTS users (
+			id SERIAL PRIMARY KEY,
 			name VARCHAR(255) NOT NULL,
 			email VARCHAR(255) UNIQUE NOT NULL,
 			password VARCHAR(255) NOT NULL,
@@ -152,7 +152,7 @@ func (it *SQLManager) CreateUserTable() error {
 		);`,
 	)
 	if err != nil {
-		fmt.Println("Erro", err)
+		fmt.Println("Erro:", err)
 		return err
 	}
 	return nil
