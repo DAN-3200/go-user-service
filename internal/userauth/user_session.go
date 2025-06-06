@@ -1,16 +1,17 @@
 package userauth
+
 // Necessita do redis-server ativo
 import (
-	"app/internal/db"
 	"context"
 	"encoding/json"
 	"fmt"
-	"strconv"
 	"time"
+
+	"github.com/redis/go-redis/v9"
 )
 
 type UserSession struct {
-	Id    int
+	Id    string
 	Name  string
 	Email string
 	Role  string
@@ -18,7 +19,12 @@ type UserSession struct {
 }
 
 var ctx = context.Background()
-var useRedis = db.Conn_Redis()
+var useRedis *redis.Client
+
+// Primeiro a ser executado
+func InitCoreRedis(core *redis.Client) {
+	useRedis = core
+}
 
 func SetUserSession(info UserSession) error {
 	infoJSON, err := json.Marshal(info)
@@ -26,7 +32,7 @@ func SetUserSession(info UserSession) error {
 		fmt.Print(err)
 		return err
 	}
-	err = useRedis.Set(ctx, strconv.Itoa(info.Id), infoJSON, 10*time.Minute).Err()
+	err = useRedis.Set(ctx, info.Id, infoJSON, 10*time.Minute).Err()
 	if err != nil {
 		fmt.Println("Não foi possível salvar no Redis \n", err)
 		return err
@@ -37,7 +43,7 @@ func SetUserSession(info UserSession) error {
 
 func GetUserSession(Id string) (*UserSession, error) {
 	var obj UserSession
-	var query, err = useRedis.Get(ctx, Id).Result()
+	query, err := useRedis.Get(ctx, Id).Result()
 	if err != nil {
 		fmt.Println("Erro de Consultar Redis: ", err)
 		return &obj, err
@@ -53,7 +59,7 @@ func GetUserSession(Id string) (*UserSession, error) {
 }
 
 func LogoutUserSession(Id string) error {
-	var err = useRedis.Del(ctx, Id).Err()
+	err := useRedis.Del(ctx, Id).Err()
 	if err != nil {
 		fmt.Printf("Erro ao remover chave: %v", err)
 		return err
