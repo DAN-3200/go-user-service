@@ -1,14 +1,13 @@
 package integration
 
 import (
-	"app/internal/model"
+	"app/internal/db"
+	"app/internal/dto"
 	"app/internal/repository"
 	"app/internal/usecase"
 	"app/internal/userauth"
 	"database/sql"
-	"strconv"
 	"testing"
-	"time"
 
 	_ "github.com/mattn/go-sqlite3"
 
@@ -19,6 +18,7 @@ import (
 func Test_CreateToDelete(t *testing.T) {
 	// layers
 	conn, err := sql.Open("sqlite3", ":memory:")
+	userauth.InitCoreRedis(db.Conn_Redis())
 	assert.NoError(t, err, err)
 	repo := repository.NewSQLManager(conn)
 	err = repo.CreateUserTable()
@@ -26,32 +26,28 @@ func Test_CreateToDelete(t *testing.T) {
 	service := usecase.NewUserUseCase(repo)
 
 	// test service.methods
-	tempoAtual := time.Now().Format("0000-00-00 00:00:00")
-	user := &model.User{
-		Id:       0,
+	user := &dto.UserReq{
 		Name:     "bellon",
 		Email:    "bellon@gmail.com",
 		Password: "bellon321",
 		Role:     "user",
-		Date:     tempoAtual,
 	}
 
-	err = user.Validate()
+	err = user.ValidateFields()
 	require.NoError(t, err, err)
 
-	err = service.UserCreate(*user)
+	err = service.CreateUser(*user)
 	require.NoError(t, err, err)
 
-	login := model.LoginFields{Email: user.Email, Password: user.Password}
-	errList, err := login.ValidateFields()
-	require.NoError(t, err, errList)
+	login := dto.Login{Email: user.Email, Password: user.Password}
+	err = login.ValidateFields()
+	require.NoError(t, err, err)
 
-	keyJWT, err := service.UserLogin(login.Email, login.Password)
+	keyJWT, err := service.UserLogin(login)
 	require.NoError(t, err, err)
 
 	_, claims := userauth.ValidateJWT(keyJWT)
 
-	nId, err := strconv.Atoi(claims.UserID)
-	err = service.UserDelete(nId)
+	err = service.DeleteUser(claims.UserID)
 	require.NoError(t, err, err)
 }

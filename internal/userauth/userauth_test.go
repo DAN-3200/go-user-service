@@ -6,7 +6,7 @@ import (
 )
 
 func TestJWT(t *testing.T) {
-	token, err := userauth.GenerateJWT("h00", "person@gmail.com", "user")
+	token, err := userauth.GenerateJWT("h00", "user")
 	if err != nil {
 		t.Fatalf("Erro ao gerar token: %v", err)
 	}
@@ -14,7 +14,7 @@ func TestJWT(t *testing.T) {
 	if !valid {
 		t.Error("Token inválido")
 	}
-	if claims.Iss != "person@gmail.com" || claims.UserID != "h00" || claims.Role != "user" {
+	if claims.UserID != "h00" || claims.Role != "user" {
 		t.Error("Claims inválidos")
 	}
 	t.Log("Tudo certo!!")
