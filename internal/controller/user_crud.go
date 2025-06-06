@@ -2,14 +2,13 @@
 package controller
 
 import (
-	"app/internal/model"
+	"app/internal/dto"
 	"app/internal/mytypes"
 	"app/internal/usecase"
 	"app/internal/userauth"
 	"fmt"
 	"log"
 	"net/http"
-	"strconv"
 
 	"github.com/gin-gonic/gin"
 )
@@ -22,43 +21,57 @@ func NewUserController(useCase usecase.UserUseCase) *UserController {
 	return &UserController{useCase}
 }
 
-// -- Methods
+// ------------------------------------------------------------------------
 
 func (it *UserController) CreateUser(ctx *gin.Context) {
-	var request model.User
+	var request dto.UserReq
 	if err := ctx.BindJSON(&request); err != nil {
 		fmt.Println("Erro na leitura da requisição")
 		ctx.JSON(http.StatusBadRequest, "Erro na leitura da requisição")
 		return
 	}
-	err := request.Validate()
 
+	err := request.ValidateFields()
 	if err != nil {
-		ctx.JSON(http.StatusBadRequest, mytypes.DetailsError{
-			HttpStatus: http.StatusBadRequest,
-			Error:      err.Error(),
-		})
+		ctx.JSON(http.StatusBadRequest, err)
 		return
 	}
 
-	err = it.useCase.UserCreate(request)
+	err = it.useCase.CreateUser(request)
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, err)
 		return
 	}
 
-	ctx.JSON(http.StatusCreated, "Ok")
+	ctx.JSON(http.StatusCreated, "Usuário criado com sucesso")
 }
 
-func (it *UserController) ReadUser(ctx *gin.Context) {
+func (it *UserController) GetUser(ctx *gin.Context) {
 	paramID := ctx.Param("id")
-	pID, _ := strconv.Atoi(paramID)
 
-	var response = it.useCase.UserRead(pID)
+	response, err := it.useCase.GetUser(paramID)
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, err)
+		return
+	}
+
+	value, _ := ctx.Get("user_session")
+	userInfo, ok := value.(*userauth.UserSession)
+	if !ok {
+		log.Println("Falha na conversão para userauth.UserSession")
+		ctx.AbortWithStatusJSON(http.StatusInternalServerError, "Erro interno no servidor")
+		return
+	}
+
+	if userInfo.Role != "admin" && paramID != userInfo.Id {
+		ctx.JSON(403, "Acesso não autorizado")
+		return
+	}
+
 	ctx.JSON(http.StatusOK, response)
 }
 
-func (it *UserController) ReadAllUser(ctx *gin.Context) {
+func (it *UserController) GetAllUsers(ctx *gin.Context) {
 	value, _ := ctx.Get("user_session")
 	userInfo, ok := value.(*userauth.UserSession)
 	if !ok {
@@ -72,33 +85,28 @@ func (it *UserController) ReadAllUser(ctx *gin.Context) {
 		return
 	}
 
-	response, err := it.useCase.ReadAllUser()
+	response, err := it.useCase.GetAllUsers()
 	if err != nil {
 		ctx.JSON(http.StatusNotFound, err)
 		return
 	}
+
 	ctx.JSON(http.StatusOK, response)
 }
 
 func (it *UserController) UpdateUser(ctx *gin.Context) {
-	var request model.User
+	paramID := ctx.Param("id")
+
+	var request dto.UserUpdateReq
 	if err := ctx.BindJSON(&request); err != nil {
 		fmt.Println("Erro na leitura da requisição")
-		ctx.JSON(http.StatusBadRequest, mytypes.DetailsError{
-			HttpStatus: http.StatusBadRequest,
-			Error:      "Erro na leitura da requisição",
+		ctx.JSON(http.StatusBadRequest, mytypes.ErrorRes{
+			Status: http.StatusBadRequest,
+			Error:  fmt.Errorf("Erro na leitura da requisição"),
 		})
 		return
 	}
-
-	err := request.Validate()
-	if err != nil {
-		ctx.JSON(http.StatusBadRequest, mytypes.DetailsError{
-			HttpStatus: http.StatusBadRequest,
-			Error:      err.Error(),
-		})
-		return
-	}
+	request.ID = paramID
 
 	value, _ := ctx.Get("user_session")
 	userInfo, ok := value.(*userauth.UserSession)
@@ -108,43 +116,41 @@ func (it *UserController) UpdateUser(ctx *gin.Context) {
 		return
 	}
 
-	if userInfo.Role != "admin" && request.Id != userInfo.Id {
+	if userInfo.Role != "admin" && paramID != userInfo.Id {
 		ctx.JSON(403, "Acesso não autorizado")
 		return
 	}
 
-	err = it.useCase.UserUpdate(request)
+	err := it.useCase.UpdateUser(request)
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, err)
 		return
 	}
 
-	ctx.JSON(http.StatusOK, "Ok")
+	ctx.JSON(http.StatusOK, "Usuário atualizado com sucesso")
 }
 
 func (it *UserController) DeleteUser(ctx *gin.Context) {
 	paramID := ctx.Param("id")
-	pID, _ := strconv.Atoi(paramID)
 
 	value, _ := ctx.Get("user_session")
 	userInfo, ok := value.(*userauth.UserSession)
 	if !ok {
-		log.Println("Falha na conversão para userauth.UserSession")
 		ctx.AbortWithStatusJSON(http.StatusInternalServerError, "Erro interno no servidor")
 		return
 	}
 
-	if userInfo.Role != "admin" && pID != userInfo.Id {
+	if userInfo.Role != "admin" && paramID != userInfo.Id {
 		ctx.JSON(403, "Acesso não autorizado")
 		return
 	}
 
-	err := it.useCase.UserDelete(pID)
-	it.useCase.UserLogout(strconv.Itoa(pID))
+	err := it.useCase.DeleteUser(paramID)
+	it.useCase.UserLogout(paramID)
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, err)
 		return
 	}
 
-	ctx.JSON(http.StatusNoContent, "User Deleted")
+	ctx.JSON(http.StatusNoContent, "Usuário deletado com sucesso")
 }
