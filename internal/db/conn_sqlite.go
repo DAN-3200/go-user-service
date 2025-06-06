@@ -11,17 +11,16 @@ import (
 // baixar o compilador do gcc (C compiler) atraves do `choco`
 
 func Conn_Sqlite() *sql.DB {
-	var Conn, err = sql.Open("sqlite3", "./internal/db/database.db")
+	conn, err := sql.Open("sqlite3", "./internal/db/database.db")
 	if err != nil {
 		fmt.Printf("%v", err)
 		return nil
 	}
 
-	// Verificar se há resposta a conexão
-	if err := Conn.Ping(); err != nil {
+	if err := conn.Ping(); err != nil {
 		fmt.Printf("Erro: %v", err)
 		return nil
 	}
 
-	return Conn
+	return conn
 }
