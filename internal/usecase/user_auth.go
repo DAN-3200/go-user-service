@@ -1,0 +1,77 @@
+package usecase
+
+import (
+	"app/internal/dto"
+	"app/internal/model"
+	"app/internal/userauth"
+	"app/pkg/security"
+	"fmt"
+	"time"
+
+	"github.com/google/uuid"
+)
+
+func (it *UserUseCase) UserLogin(info dto.Login) (string, error) {
+	UserDB, err := it.Repo.LoginUserSQL(info.Email)
+	if err != nil {
+		return "", err
+	}
+
+	err = security.CompareHashPassword(UserDB.PasswordHash, info.Password)
+	if err != nil {
+		return "", err
+	}
+
+	stringJWT, err := userauth.GenerateJWT(UserDB.ID, UserDB.Role)
+	if err != nil {
+		return "", err
+	}
+
+	err = userauth.SetUserSession(userauth.UserSession{
+		Id:    UserDB.ID,
+		Name:  UserDB.Name,
+		Email: UserDB.Email,
+		Role:  UserDB.Role,
+		JWT:   stringJWT,
+	})
+
+	if err != nil {
+		return "", err
+	}
+
+	return stringJWT, nil
+}
+
+func (it *UserUseCase) UserLogout(infoID string) error {
+	err := userauth.LogoutUserSession(infoID)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func (it *UserUseCase) UserRegister(info dto.UserRegisterRes) error {
+	hash, err := security.HashPassword(info.Password)
+	if err != nil {
+		return fmt.Errorf("Error Bycript HashPassword")
+	}
+
+	newUser := model.User{
+		ID:              uuid.New().String(),
+		Name:            info.Name,
+		Email:           info.Email,
+		PasswordHash:    hash,
+		IsEmailVerified: false,
+		IsActive:        false,
+		CreatedAt:       time.Now(),
+		UpdatedAt:       time.Now(),
+		Role:            "user",
+	}
+
+	err = it.Repo.UserSaveSQL(newUser)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}

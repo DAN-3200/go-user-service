@@ -3,62 +3,80 @@ package usecase
 
 import (
 	"app/internal/contracts"
+	"app/internal/dto"
 	"app/internal/model"
+	"app/pkg/security"
 	"fmt"
+	"time"
+
+	"github.com/google/uuid"
 )
 
 type UserUseCase struct {
-	DB contracts.IDB
+	Repo contracts.UserRepoSQL
 }
 
-func NewUserUseCase(db contracts.IDB) *UserUseCase {
-	return &UserUseCase{db}
+func NewUserUseCase(repo contracts.UserRepoSQL) *UserUseCase {
+	return &UserUseCase{repo}
 }
 
-// -- Methods
+// ------------------------------------------------------------------------
 
-func (it *UserUseCase) UserRead(infoID int) model.User {
-	var result, err = it.DB.UserReadSQL(infoID)
+func (it *UserUseCase) CreateUser(info dto.UserReq) error {
+	hash, err := security.HashPassword(info.Password)
 	if err != nil {
-		fmt.Printf("Erro: %v", err)
-		return model.User{}
+		return fmt.Errorf("Error Bycript HashPassword")
 	}
 
-	return result
+	newUser := model.User{
+		ID:              uuid.New().String(),
+		Name:            info.Name,
+		Email:           info.Email,
+		PasswordHash:    hash,
+		IsEmailVerified: false,
+		IsActive:        true,
+		CreatedAt:       time.Now(),
+		UpdatedAt:       time.Now(),
+		Role:            info.Role,
+	}
+
+	err = it.Repo.UserSaveSQL(newUser)
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
 
-func (it *UserUseCase) ReadAllUser() ([]model.User, error) {
-	var result, err = it.DB.ReadAllUserSQL()
+func (it *UserUseCase) GetUser(infoID string) (dto.UserRes, error) {
+	result, err := it.Repo.UserReadSQL(infoID)
 	if err != nil {
-		fmt.Printf("Erro: %v", err)
-		return []model.User{}, err
+		return dto.UserRes{}, err
 	}
 
 	return result, nil
 }
 
-func (it *UserUseCase) UserCreate(info model.User) error {
-	var err = it.DB.UserSaveSQL(info)
+func (it *UserUseCase) GetAllUsers() ([]dto.UserRes, error) {
+	result, err := it.Repo.ReadAllUserSQL()
 	if err != nil {
-		fmt.Printf("Erro: %v", err)
+		return []dto.UserRes{}, err
+	}
+
+	return result, nil
+}
+
+func (it *UserUseCase) UpdateUser(info dto.UserUpdateReq) error {
+	var err = it.Repo.UserUpdateSQL(info)
+	if err != nil {
 		return err
 	}
 	return nil
 }
 
-func (it *UserUseCase) UserUpdate(info model.User) error {
-	var err = it.DB.UserUpdateSQL(info)
+func (it *UserUseCase) DeleteUser(infoID string) error {
+	var err = it.Repo.UserDeleteSQL(infoID)
 	if err != nil {
-		fmt.Printf("Erro: %v", err)
-		return err
-	}
-	return nil
-}
-
-func (it *UserUseCase) UserDelete(idUser int) error {
-	var err = it.DB.UserDeleteSQL(idUser)
-	if err != nil {
-		fmt.Printf("Erro: %v", err)
 		return err
 	}
 	return nil
