@@ -3,3 +3,4 @@
 dump.rdb
 .vscode
 tmp
+internal/db/database.db
