@@ -1,8 +1,8 @@
 package repository
 
 import (
+	"app/internal/dto"
 	"app/internal/model"
-	"app/pkg/security"
 	"database/sql"
 	"fmt"
 )
@@ -16,71 +16,82 @@ func NewSQLManager(db *sql.DB) *SQLManager {
 	return &SQLManager{db}
 }
 
-// -- SQL Methods
+// ------------------------------------------------------------------------
 
 func (it *SQLManager) UserSaveSQL(info model.User) error {
-	var query = `INSERT INTO users (name, email, password, role) VALUES ($1,$2,$3,$4)`
-	hashPassword, err := security.HashPassword(info.Password)
-	if err != nil {
-		return fmt.Errorf("Error Bycript HashPassword")
-	}
+	query := `INSERT INTO users (
+		id,
+		name, 
+		email, 
+		password_hash, 
+		is_email_verified, 
+		is_active,
+		created_at,
+		updated_at,
+		role
+	) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9);`
 
-	_, err = it.DB.Exec(query, info.Name, info.Email, hashPassword, info.Role)
+	_, err := it.DB.Exec(query,
+		info.ID,
+		info.Name,
+		info.Email,
+		info.PasswordHash,
+		info.IsEmailVerified,
+		info.IsActive,
+		info.CreatedAt,
+		info.UpdatedAt,
+		info.Role,
+	)
 	if err != nil {
-		fmt.Printf("Erro: %v", err)
 		return err
 	}
 	return nil
 }
 
-func (it *SQLManager) UserReadSQL(infoID int) (model.User, error) {
-	var query = `SELECT id, name, email, password, role, date FROM users WHERE id=$1`
-	var row = it.DB.QueryRow(query, infoID)
+func (it *SQLManager) UserReadSQL(infoID string) (dto.UserRes, error) {
+	query := `SELECT id, name, email, role, created_at FROM users WHERE id=$1`
+	row := it.DB.QueryRow(query, infoID)
 
-	var userObj model.User
-	var err = row.Scan(
-		&userObj.Id,
+	var userObj dto.UserRes
+	err := row.Scan(
+		&userObj.ID,
 		&userObj.Name,
 		&userObj.Email,
-		&userObj.Password,
 		&userObj.Role,
-		&userObj.Date,
+		&userObj.CreatedAt,
 	)
 	if err != nil {
 		if err == sql.ErrNoRows {
 			fmt.Println("Nenhum registro encontro.")
-		} else {
-			fmt.Println("Erro de consulta: ", err)
 		}
-		return model.User{}, err
+		return dto.UserRes{}, err
 	}
 
 	return userObj, nil
 }
 
-func (it *SQLManager) ReadAllUserSQL() ([]model.User, error) {
-	var query = `SELECT id, name, email, password, role, date FROM users`
-	var rows, err = it.DB.Query(query)
+func (it *SQLManager) ReadAllUserSQL() ([]dto.UserRes, error) {
+	query := `SELECT id, name, email, role, created_at FROM users`
+	rows, err := it.DB.Query(query)
 	if err != nil {
 		fmt.Printf("Erro de consulta: %v", err)
-		return []model.User{}, err
+		return []dto.UserRes{}, err
 	}
 
-	var userList []model.User
-	var m model.User
+	var userList []dto.UserRes
+	var m dto.UserRes
 
 	for rows.Next() {
 		var err = rows.Scan(
-			&m.Id,
+			&m.ID,
 			&m.Name,
 			&m.Email,
-			&m.Password,
 			&m.Role,
-			&m.Date,
+			&m.CreatedAt,
 		)
 		if err != nil {
 			fmt.Printf("Erro de Leitura dos dados do Banco: %v", err)
-			return []model.User{}, err
+			return []dto.UserRes{}, err
 		}
 		userList = append(userList, m)
 	}
@@ -88,14 +99,11 @@ func (it *SQLManager) ReadAllUserSQL() ([]model.User, error) {
 	return userList, nil
 }
 
-func (it *SQLManager) UserUpdateSQL(info model.User) error {
-	var query = `UPDATE users SET name=$1, password=$2 WHERE id = $3`
-	newPassword, err := security.HashPassword(info.Password)
-	if err != nil {
-		return fmt.Errorf("Error Bycript HashPassword")
-	}
+// Aqui!
+func (it *SQLManager) UserUpdateSQL(info dto.UserUpdateReq) error {
+	query := `UPDATE users SET name=$1, password_hash=$2 WHERE id = $3`
 
-	_, err = it.DB.Exec(query, info.Name, newPassword, info.Id)
+	_, err := it.DB.Exec(query, info.Name, info.PasswordHash, info.ID)
 	if err != nil {
 		fmt.Println("Erro ao atulizar campo da table: ", err)
 		return err
@@ -104,9 +112,9 @@ func (it *SQLManager) UserUpdateSQL(info model.User) error {
 	return nil
 }
 
-func (it *SQLManager) UserDeleteSQL(infoID int) error {
-	var query = `DELETE FROM users WHERE id = $1`
-	var _, err = it.DB.Exec(query, infoID)
+func (it *SQLManager) UserDeleteSQL(infoID string) error {
+	query := `DELETE FROM users WHERE id = $1`
+	_, err := it.DB.Exec(query, infoID)
 	if err != nil {
 		fmt.Println("Erro ao excluir: ", err)
 		return err
@@ -114,15 +122,15 @@ func (it *SQLManager) UserDeleteSQL(infoID int) error {
 	return nil
 }
 
-func (it *SQLManager) LoginUserSQL(UserEmail string) (model.User, error) {
-	var query = `SELECT id, name, password, email, role FROM users WHERE email=$1;`
+func (it *SQLManager) LoginUserSQL(userEmail string) (model.User, error) {
+	query := `SELECT id, name, password_hash, email, role FROM users WHERE email=$1;`
 
 	var mU model.User
-	var err = it.DB.QueryRow(query, UserEmail).
+	var err = it.DB.QueryRow(query, userEmail).
 		Scan(
-			&mU.Id,
+			&mU.ID,
 			&mU.Name,
-			&mU.Password,
+			&mU.PasswordHash,
 			&mU.Email,
 			&mU.Role,
 		)
@@ -140,20 +148,37 @@ func (it *SQLManager) LoginUserSQL(UserEmail string) (model.User, error) {
 	return mU, nil
 }
 
-func (it *SQLManager) CreateUserTable() error {
-	var _, err = it.DB.Exec(`
-		CREATE TABLE IF NOT EXISTS users (
-			id SERIAL PRIMARY KEY,
-			name VARCHAR(255) NOT NULL,
-			email VARCHAR(255) UNIQUE NOT NULL,
-			password VARCHAR(255) NOT NULL,
-			role VARCHAR(50) NOT NULL,
-			date TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-		);`,
+func (it *SQLManager) MyInfoSQL(infoID string) (model.User, error) {
+	query := `SELECT id,
+		name, 
+		email, 
+		password_hash, 
+		is_email_verified, 
+		is_active,
+		created_at,
+		updated_at,
+		role
+	FROM users WHERE id=$1`
+	row := it.DB.QueryRow(query, infoID)
+
+	var obj model.User
+	var err = row.Scan(
+		&obj.ID,
+		&obj.Name,
+		&obj.Email,
+		&obj.PasswordHash,
+		&obj.IsEmailVerified,
+		&obj.IsActive,
+		&obj.CreatedAt,
+		&obj.UpdatedAt,
+		&obj.Role,
 	)
 	if err != nil {
-		fmt.Println("Erro:", err)
-		return err
+		if err == sql.ErrNoRows {
+			fmt.Println("Nenhum registro encontro.")
+		}
+		return model.User{}, err
 	}
-	return nil
+
+	return obj, nil
 }
