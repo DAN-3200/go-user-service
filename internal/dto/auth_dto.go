@@ -6,8 +6,8 @@ import (
 )
 
 type Login struct {
-	Email    string `json:"email"`
-	Password string `json:"password"`
+	Email    string `json:"email" binding:"required,email"`
+	Password string `json:"password" binding:"required,min=5,max=20"`
 }
 
 func (it *Login) ValidateFields() error {
@@ -30,7 +30,8 @@ func (it *Login) ValidateFields() error {
 }
 
 type UserRegisterRes struct {
-	Name     string `json:"name"`
-	Email    string `json:"email"`
-	Password string `json:"password"`
+	Name     string `json:"name" binding:"required,min=5"`
+	Email    string `json:"email" binding:"required,email"`
+	Password string `json:"password" binding:"required,min=5,max=20"`
 }
+

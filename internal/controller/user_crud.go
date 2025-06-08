@@ -3,57 +3,37 @@ package controller
 
 import (
 	"app/internal/dto"
-	"app/internal/mytypes"
-	"app/internal/usecase"
 	"app/internal/userauth"
-	"fmt"
 	"log"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
 )
 
-type UserController struct {
-	useCase usecase.UserUseCase
-}
-
-func NewUserController(useCase usecase.UserUseCase) *UserController {
-	return &UserController{useCase}
-}
-
-// ------------------------------------------------------------------------
-
 func (it *UserController) CreateUser(ctx *gin.Context) {
-	var request dto.UserReq
-	if err := ctx.BindJSON(&request); err != nil {
-		fmt.Println("Erro na leitura da requisição")
-		ctx.JSON(http.StatusBadRequest, "Erro na leitura da requisição")
+	request, err := MapReqJSON[dto.UserReq](ctx)
+	if err != nil {
+		ctx.String(http.StatusInternalServerError, err.Error())
 		return
 	}
 
-	err := request.ValidateFields()
+	err = request.ValidateFields()
 	if err != nil {
 		ctx.JSON(http.StatusBadRequest, err)
 		return
 	}
 
-	err = it.useCase.CreateUser(request)
+	err = it.useCase.CreateUser(*request)
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, err)
 		return
 	}
 
-	ctx.JSON(http.StatusCreated, "Usuário criado com sucesso")
+	ctx.String(http.StatusCreated, "Usuário criado com sucesso")
 }
 
 func (it *UserController) GetUser(ctx *gin.Context) {
 	paramID := ctx.Param("id")
-
-	response, err := it.useCase.GetUser(paramID)
-	if err != nil {
-		ctx.JSON(http.StatusInternalServerError, err)
-		return
-	}
 
 	value, _ := ctx.Get("user_session")
 	userInfo, ok := value.(*userauth.UserSession)
@@ -65,6 +45,12 @@ func (it *UserController) GetUser(ctx *gin.Context) {
 
 	if userInfo.Role != "admin" && paramID != userInfo.Id {
 		ctx.JSON(403, "Acesso não autorizado")
+		return
+	}
+
+	response, err := it.useCase.GetUser(paramID)
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, err)
 		return
 	}
 
@@ -97,13 +83,9 @@ func (it *UserController) GetAllUsers(ctx *gin.Context) {
 func (it *UserController) UpdateUser(ctx *gin.Context) {
 	paramID := ctx.Param("id")
 
-	var request dto.UserUpdateReq
-	if err := ctx.BindJSON(&request); err != nil {
-		fmt.Println("Erro na leitura da requisição")
-		ctx.JSON(http.StatusBadRequest, mytypes.ErrorRes{
-			Status: http.StatusBadRequest,
-			Error:  fmt.Errorf("Erro na leitura da requisição"),
-		})
+	request, err := MapReqJSON[dto.UserUpdateReq](ctx)
+	if err != nil {
+		ctx.String(http.StatusInternalServerError, err.Error())
 		return
 	}
 	request.ID = paramID
@@ -121,13 +103,13 @@ func (it *UserController) UpdateUser(ctx *gin.Context) {
 		return
 	}
 
-	err := it.useCase.UpdateUser(request)
+	err = it.useCase.UpdateUser(*request)
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, err)
 		return
 	}
 
-	ctx.JSON(http.StatusOK, "Usuário atualizado com sucesso")
+	ctx.String(http.StatusOK, "Usuário atualizado com sucesso")
 }
 
 func (it *UserController) DeleteUser(ctx *gin.Context) {
@@ -152,5 +134,5 @@ func (it *UserController) DeleteUser(ctx *gin.Context) {
 		return
 	}
 
-	ctx.JSON(http.StatusNoContent, "Usuário deletado com sucesso")
+	ctx.String(http.StatusNoContent, "Usuário deletado com sucesso")
 }

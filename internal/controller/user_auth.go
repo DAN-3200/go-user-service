@@ -11,13 +11,13 @@ import (
 )
 
 func (it *UserController) LoginUser(ctx *gin.Context) {
-	var request dto.Login
-	if err := ctx.BindJSON(&request); err != nil {
-		ctx.JSON(http.StatusInternalServerError, "Erro na leitura da requisição")
+	request, err := MapReqJSON[dto.Login](ctx)
+	if err != nil {
+		ctx.String(http.StatusInternalServerError, err.Error())
 		return
 	}
 
-	err := request.ValidateFields()
+	err = request.ValidateFields()
 	if err != nil {
 		ctx.JSON(http.StatusBadRequest, mytypes.ErrorRes{
 			Status: http.StatusBadRequest,
@@ -26,7 +26,7 @@ func (it *UserController) LoginUser(ctx *gin.Context) {
 		return
 	}
 
-	stringJWT, err := it.useCase.UserLogin(request)
+	stringJWT, err := it.useCase.UserLogin(*request)
 	if err != nil {
 		fmt.Println(err)
 		ctx.JSON(http.StatusUnauthorized, mytypes.ErrorRes{
@@ -57,13 +57,13 @@ func (it *UserController) LogoutUser(ctx *gin.Context) {
 }
 
 func (it *UserController) RegisterUser(ctx *gin.Context) {
-	var request dto.UserRegisterRes
-	if err := ctx.BindJSON(&request); err != nil {
-		ctx.JSON(http.StatusInternalServerError, "Erro na leitura da requisição")
+	request, err := MapReqJSON[dto.UserRegisterRes](ctx)
+	if err != nil {
+		ctx.String(http.StatusInternalServerError, err.Error())
 		return
 	}
 
-	err := it.useCase.UserRegister(request)
+	err = it.useCase.UserRegister(*request)
 	if err != nil {
 		fmt.Println(err)
 		ctx.JSON(http.StatusUnauthorized, mytypes.ErrorRes{
@@ -73,5 +73,5 @@ func (it *UserController) RegisterUser(ctx *gin.Context) {
 		return
 	}
 
-	ctx.JSON(http.StatusCreated, "Usuário Criado")
+	ctx.String(http.StatusCreated, "Usuário Criado")
 }
