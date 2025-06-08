@@ -4,7 +4,6 @@ import (
 	"app/internal/dto"
 	"app/internal/mytypes"
 	"app/internal/userauth"
-	"fmt"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -17,18 +16,8 @@ func (it *UserController) LoginUser(ctx *gin.Context) {
 		return
 	}
 
-	err = request.ValidateFields()
-	if err != nil {
-		ctx.JSON(http.StatusBadRequest, mytypes.ErrorRes{
-			Status: http.StatusBadRequest,
-			Error:  err,
-		})
-		return
-	}
-
 	stringJWT, err := it.useCase.UserLogin(*request)
 	if err != nil {
-		fmt.Println(err)
 		ctx.JSON(http.StatusUnauthorized, mytypes.ErrorRes{
 			Status: http.StatusUnauthorized,
 			Error:  err,
@@ -64,7 +53,6 @@ func (it *UserController) RegisterUser(ctx *gin.Context) {
 
 	err = it.useCase.UserRegister(*request)
 	if err != nil {
-		fmt.Println(err)
 		ctx.JSON(http.StatusUnauthorized, mytypes.ErrorRes{
 			Status: http.StatusUnauthorized,
 			Error:  err,

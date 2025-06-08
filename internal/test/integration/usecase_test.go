@@ -33,15 +33,12 @@ func Test_CreateToDelete(t *testing.T) {
 		Role:     "user",
 	}
 
-	err = user.ValidateFields()
-	require.NoError(t, err, err)
 
 	err = service.CreateUser(*user)
 	require.NoError(t, err, err)
 
 	login := dto.Login{Email: user.Email, Password: user.Password}
-	err = login.ValidateFields()
-	require.NoError(t, err, err)
+
 
 	keyJWT, err := service.UserLogin(login)
 	require.NoError(t, err, err)

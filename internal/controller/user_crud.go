@@ -16,12 +16,6 @@ func (it *UserController) CreateUser(ctx *gin.Context) {
 		return
 	}
 
-	err = request.ValidateFields()
-	if err != nil {
-		ctx.JSON(http.StatusBadRequest, err)
-		return
-	}
-
 	err = it.useCase.CreateUser(*request)
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, err)
