@@ -40,20 +40,19 @@ func (it *UserController) LoginUser(ctx *gin.Context) {
 }
 
 func (it *UserController) LogoutUser(ctx *gin.Context) {
-	value, _ := ctx.Get("user_session")
-	userInfo, ok := value.(*userauth.UserSession)
-	if !ok {
-		ctx.AbortWithStatusJSON(http.StatusInternalServerError, "Falha na conversão para userauth.UserSession")
+	userInfo, err := GetInfoSession[userauth.UserSession](ctx, "user_session")
+	if err != nil {
+		ctx.String(http.StatusInternalServerError, err.Error())
 		return
 	}
 
-	err := it.useCase.UserLogout(userInfo.Id)
+	err = it.useCase.UserLogout(userInfo.Id)
 	if err != nil {
 		ctx.JSON(http.StatusUnauthorized, err)
 		return
 	}
 
-	ctx.JSON(http.StatusOK, "Logout Ok")
+	ctx.String(http.StatusOK, "Logout Ok")
 }
 
 func (it *UserController) RegisterUser(ctx *gin.Context) {

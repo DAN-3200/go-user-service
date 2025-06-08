@@ -4,7 +4,6 @@ package controller
 import (
 	"app/internal/dto"
 	"app/internal/userauth"
-	"log"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -35,11 +34,9 @@ func (it *UserController) CreateUser(ctx *gin.Context) {
 func (it *UserController) GetUser(ctx *gin.Context) {
 	paramID := ctx.Param("id")
 
-	value, _ := ctx.Get("user_session")
-	userInfo, ok := value.(*userauth.UserSession)
-	if !ok {
-		log.Println("Falha na conversão para userauth.UserSession")
-		ctx.AbortWithStatusJSON(http.StatusInternalServerError, "Erro interno no servidor")
+	userInfo, err := GetInfoSession[userauth.UserSession](ctx, "user_session")
+	if err != nil {
+		ctx.String(http.StatusInternalServerError, err.Error())
 		return
 	}
 
@@ -58,11 +55,9 @@ func (it *UserController) GetUser(ctx *gin.Context) {
 }
 
 func (it *UserController) GetAllUsers(ctx *gin.Context) {
-	value, _ := ctx.Get("user_session")
-	userInfo, ok := value.(*userauth.UserSession)
-	if !ok {
-		log.Println("Falha na conversão para userauth.UserSession")
-		ctx.AbortWithStatusJSON(http.StatusInternalServerError, "Erro interno no servidor")
+	userInfo, err := GetInfoSession[userauth.UserSession](ctx, "user_session")
+	if err != nil {
+		ctx.String(http.StatusInternalServerError, err.Error())
 		return
 	}
 
@@ -90,11 +85,9 @@ func (it *UserController) UpdateUser(ctx *gin.Context) {
 	}
 	request.ID = paramID
 
-	value, _ := ctx.Get("user_session")
-	userInfo, ok := value.(*userauth.UserSession)
-	if !ok {
-		log.Println("Falha na conversão para userauth.UserSession")
-		ctx.AbortWithStatusJSON(http.StatusInternalServerError, "Erro interno no servidor")
+	userInfo, err := GetInfoSession[userauth.UserSession](ctx, "user_session")
+	if err != nil {
+		ctx.String(http.StatusInternalServerError, err.Error())
 		return
 	}
 
@@ -115,10 +108,9 @@ func (it *UserController) UpdateUser(ctx *gin.Context) {
 func (it *UserController) DeleteUser(ctx *gin.Context) {
 	paramID := ctx.Param("id")
 
-	value, _ := ctx.Get("user_session")
-	userInfo, ok := value.(*userauth.UserSession)
-	if !ok {
-		ctx.AbortWithStatusJSON(http.StatusInternalServerError, "Erro interno no servidor")
+	userInfo, err := GetInfoSession[userauth.UserSession](ctx, "user_session")
+	if err != nil {
+		ctx.String(http.StatusInternalServerError, err.Error())
 		return
 	}
 
@@ -127,7 +119,7 @@ func (it *UserController) DeleteUser(ctx *gin.Context) {
 		return
 	}
 
-	err := it.useCase.DeleteUser(paramID)
+	err = it.useCase.DeleteUser(paramID)
 	it.useCase.UserLogout(paramID)
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, err)
