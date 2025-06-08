@@ -11,7 +11,7 @@ import (
 	"github.com/google/uuid"
 )
 
-func (it *UserUseCase) UserLogin(info dto.Login) (string, error) {
+func (it *LayerUseCase) UserLogin(info dto.Login) (string, error) {
 	UserDB, err := it.Repo.LoginUserSQL(info.Email)
 	if err != nil {
 		return "", err
@@ -42,7 +42,7 @@ func (it *UserUseCase) UserLogin(info dto.Login) (string, error) {
 	return stringJWT, nil
 }
 
-func (it *UserUseCase) UserLogout(infoID string) error {
+func (it *LayerUseCase) UserLogout(infoID string) error {
 	err := userauth.LogoutUserSession(infoID)
 	if err != nil {
 		return err
@@ -50,7 +50,7 @@ func (it *UserUseCase) UserLogout(infoID string) error {
 	return nil
 }
 
-func (it *UserUseCase) UserRegister(info dto.UserRegisterRes) error {
+func (it *LayerUseCase) UserRegister(info dto.UserRegisterRes) error {
 	hash, err := security.HashPassword(info.Password)
 	if err != nil {
 		return fmt.Errorf("Error Bycript HashPassword")

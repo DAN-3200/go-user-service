@@ -23,10 +23,8 @@ func RunServer() {
 	dbManager := repository.NewSQLManager(ConnSQL)
 	dbManager.CreateUserTable()
 
-	setUseCase := usecase.NewUserUseCase(dbManager)
-	setController := controller.NewUserController(*setUseCase)
 	HealthCheck(server, ConnSQL, ConnRedis)
-	Routes(server, *setController)
+	Routes(server,*controller.Init(*usecase.Init(dbManager)))
 
 	server.Run(":3000")
 }

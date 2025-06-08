@@ -7,12 +7,12 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-type UserController struct {
-	useCase usecase.UserUseCase
+type LayerController struct {
+	useCase usecase.LayerUseCase
 }
 
-func NewUserController(useCase usecase.UserUseCase) *UserController {
-	return &UserController{useCase}
+func Init(useCase usecase.LayerUseCase) *LayerController {
+	return &LayerController{useCase}
 }
 
 // ------------------------------------------------------------------------

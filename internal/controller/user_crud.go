@@ -9,7 +9,7 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func (it *UserController) CreateUser(ctx *gin.Context) {
+func (it *LayerController) CreateUser(ctx *gin.Context) {
 	request, err := MapReqJSON[dto.UserReq](ctx)
 	if err != nil {
 		ctx.String(http.StatusInternalServerError, err.Error())
@@ -25,7 +25,7 @@ func (it *UserController) CreateUser(ctx *gin.Context) {
 	ctx.String(http.StatusCreated, "Usuário criado com sucesso")
 }
 
-func (it *UserController) GetUser(ctx *gin.Context) {
+func (it *LayerController) GetUser(ctx *gin.Context) {
 	paramID := ctx.Param("id")
 
 	userInfo, err := GetInfoSession[userauth.UserSession](ctx, "user_session")
@@ -48,7 +48,7 @@ func (it *UserController) GetUser(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, response)
 }
 
-func (it *UserController) GetAllUsers(ctx *gin.Context) {
+func (it *LayerController) GetAllUsers(ctx *gin.Context) {
 	userInfo, err := GetInfoSession[userauth.UserSession](ctx, "user_session")
 	if err != nil {
 		ctx.String(http.StatusInternalServerError, err.Error())
@@ -69,7 +69,7 @@ func (it *UserController) GetAllUsers(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, response)
 }
 
-func (it *UserController) UpdateUser(ctx *gin.Context) {
+func (it *LayerController) UpdateUser(ctx *gin.Context) {
 	paramID := ctx.Param("id")
 
 	request, err := MapReqJSON[dto.UserUpdateReq](ctx)
@@ -99,7 +99,7 @@ func (it *UserController) UpdateUser(ctx *gin.Context) {
 	ctx.String(http.StatusOK, "Usuário atualizado com sucesso")
 }
 
-func (it *UserController) DeleteUser(ctx *gin.Context) {
+func (it *LayerController) DeleteUser(ctx *gin.Context) {
 	paramID := ctx.Param("id")
 
 	userInfo, err := GetInfoSession[userauth.UserSession](ctx, "user_session")

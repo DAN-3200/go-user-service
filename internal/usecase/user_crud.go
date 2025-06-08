@@ -2,7 +2,6 @@
 package usecase
 
 import (
-	"app/internal/contracts"
 	"app/internal/dto"
 	"app/internal/model"
 	"app/pkg/security"
@@ -12,17 +11,7 @@ import (
 	"github.com/google/uuid"
 )
 
-type UserUseCase struct {
-	Repo contracts.UserRepoSQL
-}
-
-func NewUserUseCase(repo contracts.UserRepoSQL) *UserUseCase {
-	return &UserUseCase{repo}
-}
-
-// ------------------------------------------------------------------------
-
-func (it *UserUseCase) CreateUser(info dto.UserReq) error {
+func (it *LayerUseCase) CreateUser(info dto.UserReq) error {
 	hash, err := security.HashPassword(info.Password)
 	if err != nil {
 		return fmt.Errorf("Error Bycript HashPassword")
@@ -48,7 +37,7 @@ func (it *UserUseCase) CreateUser(info dto.UserReq) error {
 	return nil
 }
 
-func (it *UserUseCase) GetUser(infoID string) (dto.UserRes, error) {
+func (it *LayerUseCase) GetUser(infoID string) (dto.UserRes, error) {
 	result, err := it.Repo.UserReadSQL(infoID)
 	if err != nil {
 		return dto.UserRes{}, err
@@ -57,7 +46,7 @@ func (it *UserUseCase) GetUser(infoID string) (dto.UserRes, error) {
 	return result, nil
 }
 
-func (it *UserUseCase) GetAllUsers() ([]dto.UserRes, error) {
+func (it *LayerUseCase) GetAllUsers() ([]dto.UserRes, error) {
 	result, err := it.Repo.ReadAllUserSQL()
 	if err != nil {
 		return []dto.UserRes{}, err
@@ -66,7 +55,7 @@ func (it *UserUseCase) GetAllUsers() ([]dto.UserRes, error) {
 	return result, nil
 }
 
-func (it *UserUseCase) UpdateUser(info dto.UserUpdateReq) error {
+func (it *LayerUseCase) UpdateUser(info dto.UserUpdateReq) error {
 	var err = it.Repo.UserUpdateSQL(info)
 	if err != nil {
 		return err
@@ -74,7 +63,7 @@ func (it *UserUseCase) UpdateUser(info dto.UserUpdateReq) error {
 	return nil
 }
 
-func (it *UserUseCase) DeleteUser(infoID string) error {
+func (it *LayerUseCase) DeleteUser(infoID string) error {
 	var err = it.Repo.UserDeleteSQL(infoID)
 	if err != nil {
 		return err

@@ -9,7 +9,7 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func (it *UserController) LoginUser(ctx *gin.Context) {
+func (it *LayerController) LoginUser(ctx *gin.Context) {
 	request, err := MapReqJSON[dto.Login](ctx)
 	if err != nil {
 		ctx.String(http.StatusInternalServerError, err.Error())
@@ -28,7 +28,7 @@ func (it *UserController) LoginUser(ctx *gin.Context) {
 	ctx.String(http.StatusOK, stringJWT)
 }
 
-func (it *UserController) LogoutUser(ctx *gin.Context) {
+func (it *LayerController) LogoutUser(ctx *gin.Context) {
 	userInfo, err := GetInfoSession[userauth.UserSession](ctx, "user_session")
 	if err != nil {
 		ctx.String(http.StatusInternalServerError, err.Error())
@@ -44,7 +44,7 @@ func (it *UserController) LogoutUser(ctx *gin.Context) {
 	ctx.String(http.StatusOK, "Logout Ok")
 }
 
-func (it *UserController) RegisterUser(ctx *gin.Context) {
+func (it *LayerController) RegisterUser(ctx *gin.Context) {
 	request, err := MapReqJSON[dto.UserRegisterRes](ctx)
 	if err != nil {
 		ctx.String(http.StatusInternalServerError, err.Error())

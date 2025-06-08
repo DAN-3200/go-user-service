@@ -23,7 +23,7 @@ func Test_CreateToDelete(t *testing.T) {
 	repo := repository.NewSQLManager(conn)
 	err = repo.CreateUserTable()
 	require.NoError(t, err, err)
-	service := usecase.NewUserUseCase(repo)
+	service := usecase.Init(repo)
 
 	// test service.methods
 	user := &dto.UserReq{
@@ -33,12 +33,10 @@ func Test_CreateToDelete(t *testing.T) {
 		Role:     "user",
 	}
 
-
 	err = service.CreateUser(*user)
 	require.NoError(t, err, err)
 
 	login := dto.Login{Email: user.Email, Password: user.Password}
-
 
 	keyJWT, err := service.UserLogin(login)
 	require.NoError(t, err, err)

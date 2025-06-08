@@ -7,7 +7,7 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func (it *UserController) MyInfo(ctx *gin.Context) {
+func (it *LayerController) MyInfo(ctx *gin.Context) {
 	userInfo, err := GetInfoSession[userauth.UserSession](ctx, "user_session")
 	if err != nil {
 		ctx.String(http.StatusInternalServerError, err.Error())

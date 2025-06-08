@@ -10,7 +10,7 @@ import (
 	"github.com/redis/go-redis/v9"
 )
 
-func Routes(server *gin.Engine, controller controller.UserController) {
+func Routes(server *gin.Engine, controller controller.LayerController) {
 	admin := server.Group("/users", mdw.AuthJWT())
 	{
 		admin.POST("", controller.CreateUser)
@@ -26,7 +26,7 @@ func Routes(server *gin.Engine, controller controller.UserController) {
 		auth.POST("/logout", mdw.AuthJWT(), controller.LogoutUser)
 		auth.POST("/register", controller.RegisterUser)
 		auth.POST("/refresh", func(ctx *gin.Context) {
-			
+
 		})
 		auth.POST("/forgot-password")
 	}
