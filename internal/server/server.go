@@ -24,7 +24,8 @@ func RunServer() {
 	dbManager.CreateUserTable()
 
 	HealthCheck(server, ConnSQL, ConnRedis)
-	Routes(server,*controller.Init(*usecase.Init(dbManager)))
+	// middlewares.SetProme(server)
+	Routes(server, *controller.Init(*usecase.Init(dbManager)))
 
 	server.Run(":3000")
 }
