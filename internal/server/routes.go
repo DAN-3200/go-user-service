@@ -11,7 +11,7 @@ import (
 )
 
 func Routes(server *gin.Engine, controller controller.LayerController) {
-	admin := server.Group("/users", mdw.AuthJWT())
+	admin := server.Group("/users", mdw.Auth2FA(), mdw.AuthRole("admin"))
 	{
 		admin.POST("", controller.CreateUser)
 		admin.GET("", controller.GetAllUsers)
@@ -23,17 +23,17 @@ func Routes(server *gin.Engine, controller controller.LayerController) {
 	auth := server.Group("/auth")
 	{
 		auth.POST("/login", controller.LoginUser)
-		auth.POST("/logout", mdw.AuthJWT(), controller.LogoutUser)
+		auth.POST("/logout", mdw.Auth2FA(), controller.LogoutUser)
 		auth.POST("/register", controller.RegisterUser)
-		auth.POST("/refresh", func(ctx *gin.Context) {
-
-		})
+		auth.POST("/verify-email")
+		auth.POST("/refresh")
 		auth.POST("/forgot-password")
 	}
 
-	me := server.Group("/me", mdw.AuthJWT())
+	me := server.Group("/me", mdw.Auth2FA())
 	{
 		me.GET("", controller.MyInfo)
+		me.PATCH("")
 	}
 }
 

@@ -8,7 +8,7 @@ import (
 )
 
 // Two-Factor Authentication (2FA).
-func AuthJWT() gin.HandlerFunc {
+func Auth2FA() gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 		tokenString := ctx.Request.Header.Get("Authorization")
 

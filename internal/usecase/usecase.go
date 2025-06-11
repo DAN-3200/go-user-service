@@ -9,5 +9,3 @@ type LayerUseCase struct {
 func Init(repo contracts.UserRepoSQL) *LayerUseCase {
 	return &LayerUseCase{repo}
 }
-
-// ------------------------------------------------------------------------

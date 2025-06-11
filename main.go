@@ -1,4 +1,3 @@
-// user system
 package main
 
 import (
