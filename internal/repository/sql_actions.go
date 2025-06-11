@@ -182,3 +182,25 @@ func (it *SQLManager) MyInfoSQL(infoID string) (model.User, error) {
 
 	return obj, nil
 }
+
+func (it *SQLManager) GetUserByEmail(email string) (model.User, error) {
+	query := `SELECT id, name, role FROM users WHERE email=$1`
+	row := it.DB.QueryRow(query, email)
+
+	var obj model.User
+	err := row.Scan(
+		&obj.ID,
+		&obj.Name,
+		&obj.Role,
+	)
+
+	if err != nil {
+		return model.User{}, err
+	}
+
+	return obj, nil
+}
+
+func (it *SQLManager) EditMyInfoSQL(info map[string]any) error {
+	return nil
+}

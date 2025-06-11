@@ -1,3 +1,4 @@
+// DTO (Data Transfer Object)
 package dto
 
 type Login struct {
