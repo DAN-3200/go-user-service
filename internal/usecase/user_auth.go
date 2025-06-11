@@ -6,6 +6,8 @@ import (
 	"app/internal/userauth"
 	"app/pkg/security"
 	"fmt"
+	"net/smtp"
+	"os"
 	"time"
 
 	"github.com/google/uuid"
@@ -69,6 +71,34 @@ func (it *LayerUseCase) UserRegister(info dto.UserRegisterRes) error {
 	}
 
 	err = it.Repo.UserSaveSQL(newUser)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (it *LayerUseCase) SendRefreshForEmail(email string) error {
+	userDB, err := it.Repo.GetUserByEmail(email)
+	if err != nil {
+		return err
+	}
+
+	stringJWT, err := userauth.GenerateJWT(userDB.ID, userDB.Role)
+	if err != nil {
+		return err
+	}
+
+	// Simple Mail Transfer Protocol (smtp)
+	from := os.Getenv("MYEMAIL")
+	password := os.Getenv("MYPASSWORD")
+	println(from, password)
+	to := []string{email}
+	msg := []byte("Codigo para redefinir senha:\n" + stringJWT)
+
+	auth := smtp.PlainAuth("", from, password, "smtp.gmail.com")
+
+	err = smtp.SendMail("smtp.gmail.com:587", auth, from, to, msg)
 	if err != nil {
 		return err
 	}

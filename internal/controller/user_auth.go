@@ -63,3 +63,20 @@ func (it *LayerController) RegisterUser(ctx *gin.Context) {
 
 	ctx.String(http.StatusCreated, "Usuário Criado")
 }
+
+func (it *LayerController) SendRefreshPassword(ctx *gin.Context) {
+	EmailParam := ctx.Param("email")
+
+	err := it.useCase.SendRefreshForEmail(EmailParam)
+	if err != nil {
+		ctx.String(http.StatusUnauthorized, "Erro de validação: "+err.Error())
+		return
+	}
+
+	ctx.String(http.StatusCreated, "Refresh Password enviado")
+}
+
+func (it *LayerController) RefreshPassword(ctx *gin.Context) {
+	stringJWT := ctx.Query("jwt")
+	fmt.Println("s", stringJWT)
+}
