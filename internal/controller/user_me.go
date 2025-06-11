@@ -8,7 +8,7 @@ import (
 )
 
 func (it *LayerController) MyInfo(ctx *gin.Context) {
-	userInfo, err := GetInfoSession[userauth.UserSession](ctx, "user_session")
+	userInfo, err := userauth.GetInfoSession(ctx, "user_session")
 	if err != nil {
 		ctx.String(http.StatusInternalServerError, err.Error())
 		return

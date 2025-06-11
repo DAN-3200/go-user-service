@@ -3,7 +3,6 @@ package controller
 
 import (
 	"app/internal/dto"
-	"app/internal/userauth"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -28,17 +27,6 @@ func (it *LayerController) CreateUser(ctx *gin.Context) {
 func (it *LayerController) GetUser(ctx *gin.Context) {
 	paramID := ctx.Param("id")
 
-	userInfo, err := GetInfoSession[userauth.UserSession](ctx, "user_session")
-	if err != nil {
-		ctx.String(http.StatusInternalServerError, err.Error())
-		return
-	}
-
-	if userInfo.Role != "admin" && paramID != userInfo.Id {
-		ctx.JSON(403, "Acesso não autorizado")
-		return
-	}
-
 	response, err := it.useCase.GetUser(paramID)
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, err)
@@ -49,17 +37,6 @@ func (it *LayerController) GetUser(ctx *gin.Context) {
 }
 
 func (it *LayerController) GetAllUsers(ctx *gin.Context) {
-	userInfo, err := GetInfoSession[userauth.UserSession](ctx, "user_session")
-	if err != nil {
-		ctx.String(http.StatusInternalServerError, err.Error())
-		return
-	}
-
-	if userInfo.Role != "admin" {
-		ctx.JSON(403, "Acesso não autorizado")
-		return
-	}
-
 	response, err := it.useCase.GetAllUsers()
 	if err != nil {
 		ctx.JSON(http.StatusNotFound, err)
@@ -79,17 +56,6 @@ func (it *LayerController) UpdateUser(ctx *gin.Context) {
 	}
 	request.ID = paramID
 
-	userInfo, err := GetInfoSession[userauth.UserSession](ctx, "user_session")
-	if err != nil {
-		ctx.String(http.StatusInternalServerError, err.Error())
-		return
-	}
-
-	if userInfo.Role != "admin" && paramID != userInfo.Id {
-		ctx.JSON(403, "Acesso não autorizado")
-		return
-	}
-
 	err = it.useCase.UpdateUser(*request)
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, err)
@@ -102,18 +68,7 @@ func (it *LayerController) UpdateUser(ctx *gin.Context) {
 func (it *LayerController) DeleteUser(ctx *gin.Context) {
 	paramID := ctx.Param("id")
 
-	userInfo, err := GetInfoSession[userauth.UserSession](ctx, "user_session")
-	if err != nil {
-		ctx.String(http.StatusInternalServerError, err.Error())
-		return
-	}
-
-	if userInfo.Role != "admin" && paramID != userInfo.Id {
-		ctx.JSON(403, "Acesso não autorizado")
-		return
-	}
-
-	err = it.useCase.DeleteUser(paramID)
+	err := it.useCase.DeleteUser(paramID)
 	it.useCase.UserLogout(paramID)
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, err)

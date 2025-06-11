@@ -29,7 +29,7 @@ func (it *LayerController) LoginUser(ctx *gin.Context) {
 }
 
 func (it *LayerController) LogoutUser(ctx *gin.Context) {
-	userInfo, err := GetInfoSession[userauth.UserSession](ctx, "user_session")
+	userInfo, err := userauth.GetInfoSession(ctx, "user_session")
 	if err != nil {
 		ctx.String(http.StatusInternalServerError, err.Error())
 		return

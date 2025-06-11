@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/gin-gonic/gin"
 	"github.com/redis/go-redis/v9"
 )
 
@@ -66,4 +67,19 @@ func LogoutUserSession(Id string) error {
 	}
 
 	return nil
+}
+
+func GetInfoSession(ctx *gin.Context, key string) (*UserSession, error) {
+	var value_format *UserSession
+
+	value_base, ok := ctx.Get(key)
+	if !ok {
+		return value_format, fmt.Errorf("Key não existe")
+	}
+
+	value_format, ok = value_base.(*UserSession)
+	if !ok {
+		return value_format, fmt.Errorf("Erro ao formatar a informação")
+	}
+	return value_format, nil
 }
