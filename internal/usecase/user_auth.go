@@ -52,7 +52,7 @@ func (it *LayerUseCase) UserLogout(infoID string) error {
 	return nil
 }
 
-func (it *LayerUseCase) UserRegister(info dto.UserRegisterRes) error {
+func (it *LayerUseCase) UserRegister(info dto.UserRegisterReq) error {
 	hash, err := security.HashPassword(info.Password)
 	if err != nil {
 		return fmt.Errorf("Error Bycript HashPassword")

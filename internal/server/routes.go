@@ -25,15 +25,19 @@ func Routes(server *gin.Engine, controller controller.LayerController) {
 		auth.POST("/login", controller.LoginUser)
 		auth.POST("/logout", mdw.Auth2FA(), controller.LogoutUser)
 		auth.POST("/register", controller.RegisterUser)
+		auth.POST("/refresh-token")
 		auth.POST("/verify-email")
-		auth.POST("/refresh")
-		auth.POST("/forgot-password")
+		forgetPassword := auth.Group("/forget-password")
+		{
+			forgetPassword.GET("/send-token/:email", controller.SendRefreshPassword)
+			forgetPassword.POST("/refresh", controller.RefreshPassword)
+		}
 	}
 
 	me := server.Group("/me", mdw.Auth2FA())
 	{
-		me.GET("", controller.MyInfo)
-		me.PATCH("")
+		me.GET("", controller.GetMyInfo)
+		me.PATCH("", controller.EditMyInfo)
 	}
 }
 
