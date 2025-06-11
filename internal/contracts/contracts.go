@@ -14,4 +14,6 @@ type UserRepoSQL interface {
 	UserDeleteSQL(infoID string) error
 	LoginUserSQL(UserEmail string) (model.User, error)
 	MyInfoSQL(infoID string) (model.User, error)
+	EditMyInfoSQL(info map[string]any) error
+	GetUserByEmail(email string) (model.User, error)
 }

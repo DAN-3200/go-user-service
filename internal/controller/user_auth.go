@@ -4,6 +4,7 @@ import (
 	"app/internal/dto"
 	"app/internal/mytypes"
 	"app/internal/userauth"
+	"fmt"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -45,7 +46,7 @@ func (it *LayerController) LogoutUser(ctx *gin.Context) {
 }
 
 func (it *LayerController) RegisterUser(ctx *gin.Context) {
-	request, err := MapReqJSON[dto.UserRegisterRes](ctx)
+	request, err := MapReqJSON[dto.UserRegisterReq](ctx)
 	if err != nil {
 		ctx.String(http.StatusInternalServerError, err.Error())
 		return
