@@ -99,13 +99,11 @@ func (it *SQLManager) ReadAllUserSQL() ([]dto.UserRes, error) {
 	return userList, nil
 }
 
-// Aqui!
 func (it *SQLManager) UserUpdateSQL(info dto.UserUpdateReq) error {
-	query := `UPDATE users SET name=$1, password_hash=$2 WHERE id = $3`
+	query := `UPDATE users SET name=$1, password_hash=$2 WHERE id=$3`
 
 	_, err := it.DB.Exec(query, info.Name, info.PasswordHash, info.ID)
 	if err != nil {
-		fmt.Println("Erro ao atulizar campo da table: ", err)
 		return err
 	}
 

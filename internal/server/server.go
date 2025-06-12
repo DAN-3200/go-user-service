@@ -26,7 +26,11 @@ func RunServer() {
 
 	HealthCheck(server, ConnSQL, ConnRedis)
 	// middlewares.SetProme(server)
-	Routes(server, *controller.Init(*usecase.Init(dbManager)))
+	Routes(server,
+		*controller.Init(
+			*usecase.Init(dbManager, adapter.SetDrive()),
+		),
+	)
 
 	server.Run(":3000")
 }
