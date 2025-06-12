@@ -6,8 +6,6 @@ import (
 	"app/internal/userauth"
 	"app/pkg/security"
 	"fmt"
-	"net/smtp"
-	"os"
 	"time"
 
 	"github.com/google/uuid"
@@ -89,19 +87,35 @@ func (it *LayerUseCase) SendRefreshForEmail(email string) error {
 		return err
 	}
 
-	// Simple Mail Transfer Protocol (smtp)
-	from := os.Getenv("MYEMAIL")
-	password := os.Getenv("MYPASSWORD")
-	println(from, password)
-	to := []string{email}
-	msg := []byte("Codigo para redefinir senha:\n" + stringJWT)
-
-	auth := smtp.PlainAuth("", from, password, "smtp.gmail.com")
-
-	err = smtp.SendMail("smtp.gmail.com:587", auth, from, to, msg)
+	err = it.Drive.SendMail(email,
+		"Codigo para redefinir senha:\n"+stringJWT,
+	)
 	if err != nil {
 		return err
 	}
 
+	return nil
+}
+
+func (it *LayerUseCase) RefreshPassword(info dto.RefreshPassword) error {
+	hash, err := security.HashPassword(info.NewPassword)
+	if err != nil {
+		return err
+	}
+
+	info.NewPassword = hash
+	err = it.Repo.RefreshPassword(info)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (it *LayerUseCase) ValidateEmail(email string) error {
+	err := it.Repo.ValidateEmail(email)
+	if err != nil {
+		return err
+	}
 	return nil
 }

@@ -4,7 +4,6 @@ import (
 	"app/internal/dto"
 	"app/internal/mytypes"
 	"app/internal/userauth"
-	"fmt"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -78,5 +77,26 @@ func (it *LayerController) SendRefreshPassword(ctx *gin.Context) {
 
 func (it *LayerController) RefreshPassword(ctx *gin.Context) {
 	stringJWT := ctx.Query("jwt")
-	fmt.Println("s", stringJWT)
+
+	// validar se expirou
+	isValid, claims := userauth.ValidateJWT(stringJWT)
+	if !isValid {
+		ctx.String(http.StatusUnauthorized, "JWT inválido")
+		return
+	}
+
+	request, err := MapReqJSON[dto.RefreshPassword](ctx)
+	if err != nil {
+		ctx.String(http.StatusUnauthorized, err.Error())
+		return
+	}
+
+	request.ID = claims.UserID
+	err = it.useCase.RefreshPassword(*request)
+	if err != nil {
+		ctx.String(http.StatusInternalServerError, err.Error())
+		return
+	}
+
+	ctx.String(http.StatusOK, "Senha redefinida com sucesso!")
 }

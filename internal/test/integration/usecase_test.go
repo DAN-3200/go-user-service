@@ -1,6 +1,7 @@
 package integration
 
 import (
+	"app/internal/adapter"
 	"app/internal/db"
 	"app/internal/dto"
 	"app/internal/repository"
@@ -23,7 +24,7 @@ func Test_CreateToDelete(t *testing.T) {
 	repo := repository.NewSQLManager(conn)
 	err = repo.CreateUserTable()
 	require.NoError(t, err, err)
-	service := usecase.Init(repo)
+	service := usecase.Init(repo, adapter.SetDrive())
 
 	// test service.methods
 	user := &dto.UserReq{

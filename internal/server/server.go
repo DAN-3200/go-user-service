@@ -1,6 +1,7 @@
 package server
 
 import (
+	"app/internal/adapter"
 	"app/internal/controller"
 	"app/internal/db"
 	"app/internal/repository"

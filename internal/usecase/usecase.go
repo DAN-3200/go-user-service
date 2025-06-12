@@ -1,11 +1,14 @@
 package usecase
 
-import "app/internal/contracts"
+import (
+	"app/internal/contracts"
+)
 
 type LayerUseCase struct {
-	Repo contracts.UserRepoSQL
+	Repo  contracts.UserRepoSQL
+	Drive contracts.Drive
 }
 
-func Init(repo contracts.UserRepoSQL) *LayerUseCase {
-	return &LayerUseCase{repo}
+func Init(repo contracts.UserRepoSQL, drive contracts.Drive) *LayerUseCase {
+	return &LayerUseCase{repo, drive}
 }

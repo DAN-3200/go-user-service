@@ -204,3 +204,23 @@ func (it *SQLManager) GetUserByEmail(email string) (model.User, error) {
 func (it *SQLManager) EditMyInfoSQL(info map[string]any) error {
 	return nil
 }
+
+func (it *SQLManager) RefreshPassword(info dto.RefreshPassword) error {
+	query := `UPDATE users SET password_hash=$1 WHERE id=$2`
+	_, err := it.DB.Exec(query, info.NewPassword, info.ID)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (it *SQLManager) ValidateEmail(email string) error {
+	query := `UPDATE users SET is_email_verified=TRUE WHERE email=$1`
+	_, err := it.DB.Exec(query, email)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
