@@ -16,4 +16,10 @@ type UserRepoSQL interface {
 	MyInfoSQL(infoID string) (model.User, error)
 	EditMyInfoSQL(info map[string]any) error
 	GetUserByEmail(email string) (model.User, error)
+	RefreshPassword(info dto.RefreshPassword) error
+	ValidateEmail(email string) error
+}
+
+type Drive interface {
+	SendMail(to string, body string) error
 }
