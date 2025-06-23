@@ -27,8 +27,8 @@ func RunServer() {
 	HealthCheck(server, ConnSQL, ConnRedis)
 	// middlewares.SetProme(server)
 	Routes(server,
-		*controller.Init(
-			*usecase.Init(dbManager, adapter.SetDrive()),
+		controller.Init(
+			usecase.Init(dbManager, adapter.SetDrive()),
 		),
 	)
 

@@ -10,13 +10,13 @@ import (
 	"github.com/redis/go-redis/v9"
 )
 
-func Routes(server *gin.Engine, controller controller.LayerController) {
+func Routes(server *gin.Engine, controller *controller.LayerController) {
 	admin := server.Group("/users", mdw.Auth2FA(), mdw.AuthRole("admin"))
 	{
 		admin.POST("", controller.CreateUser)
-		admin.GET("", controller.GetAllUsers)
+		admin.GET("", controller.GetUserList)
 		admin.GET(":id", controller.GetUser)
-		admin.PUT(":id", controller.UpdateUser)
+		admin.PATCH(":id", controller.EditUser)
 		admin.DELETE(":id", controller.DeleteUser)
 	}
 
@@ -29,8 +29,8 @@ func Routes(server *gin.Engine, controller controller.LayerController) {
 		auth.POST("/verify-email")
 		forgetPassword := auth.Group("/forget-password")
 		{
-			forgetPassword.GET("/send-token/:email", controller.SendRefreshPassword)
-			forgetPassword.POST("/refresh", controller.RefreshPassword)
+			forgetPassword.GET("/send-token/:email", controller.SendRefreshForEmail)
+			forgetPassword.POST("/refresh-password", controller.RefreshPassword)
 		}
 	}
 
