@@ -7,10 +7,10 @@ import (
 )
 
 type LayerController struct {
-	useCase usecase.LayerUseCase
+	useCase *usecase.LayerUseCase
 }
 
-func Init(useCase usecase.LayerUseCase) *LayerController {
+func Init(useCase *usecase.LayerUseCase) *LayerController {
 	return &LayerController{useCase}
 }
 
