@@ -3,8 +3,10 @@ package repository
 import (
 	"app/internal/dto"
 	"app/internal/model"
+	"app/pkg/utils"
 	"database/sql"
 	"fmt"
+	"strings"
 )
 
 // Receber qualquer banco SQL
@@ -18,7 +20,7 @@ func NewSQLManager(db *sql.DB) *SQLManager {
 
 // ------------------------------------------------------------------------
 
-func (it *SQLManager) UserSaveSQL(info model.User) error {
+func (it *SQLManager) CreateUserSQL(info model.User) error {
 	query := `INSERT INTO users (
 		id,
 		name, 
@@ -48,7 +50,7 @@ func (it *SQLManager) UserSaveSQL(info model.User) error {
 	return nil
 }
 
-func (it *SQLManager) UserReadSQL(infoID string) (dto.UserRes, error) {
+func (it *SQLManager) GetUserSQL(infoID string) (dto.UserRes, error) {
 	query := `SELECT id, name, email, role, created_at FROM users WHERE id=$1`
 	row := it.DB.QueryRow(query, infoID)
 
@@ -70,7 +72,7 @@ func (it *SQLManager) UserReadSQL(infoID string) (dto.UserRes, error) {
 	return userObj, nil
 }
 
-func (it *SQLManager) ReadAllUserSQL() ([]dto.UserRes, error) {
+func (it *SQLManager) GetUserListSQL() ([]dto.UserRes, error) {
 	query := `SELECT id, name, email, role, created_at FROM users`
 	rows, err := it.DB.Query(query)
 	if err != nil {
@@ -99,10 +101,24 @@ func (it *SQLManager) ReadAllUserSQL() ([]dto.UserRes, error) {
 	return userList, nil
 }
 
-func (it *SQLManager) UserUpdateSQL(info dto.UserUpdateReq) error {
-	query := `UPDATE users SET name=$1, password_hash=$2 WHERE id=$3`
+func (it *SQLManager) EditUserSQL(id string, info dto.EditUserReq) error {
+	cols, args, err := utils.MapSQLInsertFields(
+		map[string]string{
+			"Name":            "name",
+			"Email":           "email",
+			"Password":        "password_hash", // hash armazenado
+			"IsEmailVerified": "is_email_verified",
+			"IsActive":        "is_active",
+			"Role":            "role",
+		},
+		info,
+	)
+	if err != nil {
+		return err
+	}
 
-	_, err := it.DB.Exec(query, info.Name, info.PasswordHash, info.ID)
+	query := fmt.Sprintf(`UPDATE users SET %s WHERE id='%s'`, strings.Join(cols, ", "), id)
+	_, err = it.DB.Exec(query, args...)
 	if err != nil {
 		return err
 	}
@@ -110,7 +126,7 @@ func (it *SQLManager) UserUpdateSQL(info dto.UserUpdateReq) error {
 	return nil
 }
 
-func (it *SQLManager) UserDeleteSQL(infoID string) error {
+func (it *SQLManager) DeleteUserSQL(infoID string) error {
 	query := `DELETE FROM users WHERE id = $1`
 	_, err := it.DB.Exec(query, infoID)
 	if err != nil {
@@ -119,6 +135,8 @@ func (it *SQLManager) UserDeleteSQL(infoID string) error {
 	}
 	return nil
 }
+
+// ------------------------------------------------------------------------
 
 func (it *SQLManager) LoginUserSQL(userEmail string) (model.User, error) {
 	query := `SELECT id, name, password_hash, email, role FROM users WHERE email=$1;`
@@ -146,7 +164,47 @@ func (it *SQLManager) LoginUserSQL(userEmail string) (model.User, error) {
 	return mU, nil
 }
 
-func (it *SQLManager) MyInfoSQL(infoID string) (model.User, error) {
+func (it *SQLManager) GetUserByEmail(email string) (model.User, error) {
+	query := `SELECT id, name, role FROM users WHERE email=$1`
+	row := it.DB.QueryRow(query, email)
+
+	var obj model.User
+	err := row.Scan(
+		&obj.ID,
+		&obj.Name,
+		&obj.Role,
+	)
+
+	if err != nil {
+		return model.User{}, err
+	}
+
+	return obj, nil
+}
+
+func (it *SQLManager) RefreshPassword(id string, info dto.RefreshPassword) error {
+	query := `UPDATE users SET password_hash=$1 WHERE id=$2`
+	_, err := it.DB.Exec(query, info.NewPassword, id)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (it *SQLManager) ValidateEmail(email string) error {
+	query := `UPDATE users SET is_email_verified=TRUE WHERE email=$1`
+	_, err := it.DB.Exec(query, email)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// ------------------------------------------------------------------------
+
+func (it *SQLManager) GetMyInfoSQL(infoID string) (model.User, error) {
 	query := `SELECT id,
 		name, 
 		email, 
@@ -181,41 +239,20 @@ func (it *SQLManager) MyInfoSQL(infoID string) (model.User, error) {
 	return obj, nil
 }
 
-func (it *SQLManager) GetUserByEmail(email string) (model.User, error) {
-	query := `SELECT id, name, role FROM users WHERE email=$1`
-	row := it.DB.QueryRow(query, email)
-
-	var obj model.User
-	err := row.Scan(
-		&obj.ID,
-		&obj.Name,
-		&obj.Role,
+func (it *SQLManager) EditMyInfoSQL(id string, info dto.EditMeReq) error {
+	cols, args, err := utils.MapSQLInsertFields(
+		map[string]string{
+			"Name":     "name",
+			"IsActive": "is_active",
+		},
+		info,
 	)
-
-	if err != nil {
-		return model.User{}, err
-	}
-
-	return obj, nil
-}
-
-func (it *SQLManager) EditMyInfoSQL(info map[string]any) error {
-	return nil
-}
-
-func (it *SQLManager) RefreshPassword(info dto.RefreshPassword) error {
-	query := `UPDATE users SET password_hash=$1 WHERE id=$2`
-	_, err := it.DB.Exec(query, info.NewPassword, info.ID)
 	if err != nil {
 		return err
 	}
 
-	return nil
-}
-
-func (it *SQLManager) ValidateEmail(email string) error {
-	query := `UPDATE users SET is_email_verified=TRUE WHERE email=$1`
-	_, err := it.DB.Exec(query, email)
+	query := fmt.Sprintf(`UPDATE users SET %s WHERE id='%s'`, strings.Join(cols, ", "), id)
+	_, err = it.DB.Exec(query, args...)
 	if err != nil {
 		return err
 	}
