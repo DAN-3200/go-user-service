@@ -7,17 +7,19 @@ import (
 
 // Contrato para Bancos SQL
 type UserRepoSQL interface {
-	UserSaveSQL(info model.User) error
-	UserReadSQL(infoID string) (dto.UserRes, error)
-	ReadAllUserSQL() ([]dto.UserRes, error)
-	UserUpdateSQL(info dto.UserUpdateReq) error
-	UserDeleteSQL(infoID string) error
+	CreateUserSQL(info model.User) error
+	GetUserSQL(infoID string) (dto.UserRes, error)
+	GetUserListSQL() ([]dto.UserRes, error)
+	EditUserSQL(id string, info dto.EditUserReq) error
+	DeleteUserSQL(infoID string) error
+	//
 	LoginUserSQL(UserEmail string) (model.User, error)
-	MyInfoSQL(infoID string) (model.User, error)
-	EditMyInfoSQL(info map[string]any) error
 	GetUserByEmail(email string) (model.User, error)
-	RefreshPassword(info dto.RefreshPassword) error
+	RefreshPassword(id string, info dto.RefreshPassword) error
 	ValidateEmail(email string) error
+	//
+	GetMyInfoSQL(infoID string) (model.User, error)
+	EditMyInfoSQL(id string, info dto.EditMeReq) error
 }
 
 type Drive interface {
