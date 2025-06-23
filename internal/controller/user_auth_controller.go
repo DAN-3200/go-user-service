@@ -16,7 +16,7 @@ func (it *LayerController) LoginUser(ctx *gin.Context) {
 		return
 	}
 
-	stringJWT, err := it.useCase.UserLogin(*request)
+	stringJWT, err := it.useCase.LoginUser(*request)
 	if err != nil {
 		ctx.JSON(http.StatusUnauthorized, mytypes.ErrorRes{
 			Status: http.StatusUnauthorized,
@@ -35,7 +35,7 @@ func (it *LayerController) LogoutUser(ctx *gin.Context) {
 		return
 	}
 
-	err = it.useCase.UserLogout(userInfo.Id)
+	err = it.useCase.LogoutUser(userInfo.Id)
 	if err != nil {
 		ctx.JSON(http.StatusUnauthorized, err)
 		return
@@ -51,7 +51,7 @@ func (it *LayerController) RegisterUser(ctx *gin.Context) {
 		return
 	}
 
-	err = it.useCase.UserRegister(*request)
+	err = it.useCase.RegisterUser(*request)
 	if err != nil {
 		ctx.JSON(http.StatusUnauthorized, mytypes.ErrorRes{
 			Status: http.StatusUnauthorized,
@@ -63,7 +63,7 @@ func (it *LayerController) RegisterUser(ctx *gin.Context) {
 	ctx.String(http.StatusCreated, "Usuário Criado")
 }
 
-func (it *LayerController) SendRefreshPassword(ctx *gin.Context) {
+func (it *LayerController) SendRefreshForEmail(ctx *gin.Context) {
 	EmailParam := ctx.Param("email")
 
 	err := it.useCase.SendRefreshForEmail(EmailParam)
@@ -91,8 +91,7 @@ func (it *LayerController) RefreshPassword(ctx *gin.Context) {
 		return
 	}
 
-	request.ID = claims.UserID
-	err = it.useCase.RefreshPassword(*request)
+	err = it.useCase.RefreshPassword(claims.UserID,*request)
 	if err != nil {
 		ctx.String(http.StatusInternalServerError, err.Error())
 		return

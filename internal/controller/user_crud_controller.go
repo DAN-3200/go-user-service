@@ -36,27 +36,26 @@ func (it *LayerController) GetUser(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, response)
 }
 
-func (it *LayerController) GetAllUsers(ctx *gin.Context) {
-	response, err := it.useCase.GetAllUsers()
+func (it *LayerController) GetUserList(ctx *gin.Context) {
+	response, err := it.useCase.GetUserList()
 	if err != nil {
-		ctx.JSON(http.StatusNotFound, err)
+		ctx.JSON(http.StatusNotFound, err)	
 		return
 	}
 
 	ctx.JSON(http.StatusOK, response)
 }
 
-func (it *LayerController) UpdateUser(ctx *gin.Context) {
+func (it *LayerController) EditUser(ctx *gin.Context) {
 	paramID := ctx.Param("id")
 
-	request, err := MapReqJSON[dto.UserUpdateReq](ctx)
+	request, err := MapReqJSON[dto.EditUserReq](ctx)
 	if err != nil {
 		ctx.String(http.StatusInternalServerError, err.Error())
 		return
 	}
-	request.ID = paramID
 
-	err = it.useCase.UpdateUser(*request)
+	err = it.useCase.EditUser(paramID, *request)
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, err)
 		return
@@ -69,7 +68,7 @@ func (it *LayerController) DeleteUser(ctx *gin.Context) {
 	paramID := ctx.Param("id")
 
 	err := it.useCase.DeleteUser(paramID)
-	it.useCase.UserLogout(paramID)
+	it.useCase.LogoutUser(paramID)
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, err)
 		return

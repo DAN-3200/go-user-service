@@ -36,13 +36,12 @@ func (it *LayerController) EditMyInfo(ctx *gin.Context) {
 		ctx.String(http.StatusInternalServerError, err.Error())
 		return
 	}
-	request.ID = userInfo.Id
 
-	// err = it.useCase.EditMyInfo(*request)
-	// if err != nil {
-	// 	ctx.JSON(http.StatusInternalServerError, err)
-	// 	return
-	// }
+	err = it.useCase.EditMyInfo(userInfo.Id, *request)
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, err)
+		return
+	}
 
-	ctx.JSON(http.StatusOK, "informações pessoais editada")
+	ctx.String(http.StatusOK, "informações pessoais editada")
 }
