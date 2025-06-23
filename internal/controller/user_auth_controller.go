@@ -2,7 +2,6 @@ package controller
 
 import (
 	"app/internal/dto"
-	"app/internal/mytypes"
 	"app/internal/userauth"
 	"net/http"
 
@@ -18,10 +17,7 @@ func (it *LayerController) LoginUser(ctx *gin.Context) {
 
 	stringJWT, err := it.useCase.LoginUser(*request)
 	if err != nil {
-		ctx.JSON(http.StatusUnauthorized, mytypes.ErrorRes{
-			Status: http.StatusUnauthorized,
-			Error:  err,
-		})
+		ctx.JSON(http.StatusUnauthorized, err)
 		return
 	}
 
@@ -53,10 +49,7 @@ func (it *LayerController) RegisterUser(ctx *gin.Context) {
 
 	err = it.useCase.RegisterUser(*request)
 	if err != nil {
-		ctx.JSON(http.StatusUnauthorized, mytypes.ErrorRes{
-			Status: http.StatusUnauthorized,
-			Error:  err,
-		})
+		ctx.JSON(http.StatusUnauthorized, err)
 		return
 	}
 
@@ -91,7 +84,7 @@ func (it *LayerController) RefreshPassword(ctx *gin.Context) {
 		return
 	}
 
-	err = it.useCase.RefreshPassword(claims.UserID,*request)
+	err = it.useCase.RefreshPassword(claims.UserID, *request)
 	if err != nil {
 		ctx.String(http.StatusInternalServerError, err.Error())
 		return

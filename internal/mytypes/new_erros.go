@@ -3,8 +3,16 @@ package mytypes
 import "strings"
 
 type ErrorRes struct {
-	Status int
-	Error  error
+	Status    int        `json:"status"`
+	ErrType   string     `json:"err_type"`
+	Path      string     `json:"path"`
+	Message   string     `json:"message"`
+	Details   ErrorsList `json:"details"`
+	TimeStamp string     `json:"timeStamp"`
+}
+
+func (it ErrorRes) Error() string {
+	return it.ErrType
 }
 
 type ErrorsList []string
