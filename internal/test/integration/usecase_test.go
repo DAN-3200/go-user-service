@@ -39,7 +39,7 @@ func Test_CreateToDelete(t *testing.T) {
 
 	login := dto.Login{Email: user.Email, Password: user.Password}
 
-	keyJWT, err := service.UserLogin(login)
+	keyJWT, err := service.LoginUser(login)
 	require.NoError(t, err, err)
 
 	_, claims := userauth.ValidateJWT(keyJWT)
