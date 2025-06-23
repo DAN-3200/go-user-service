@@ -29,7 +29,7 @@ func (it *LayerUseCase) CreateUser(info dto.UserReq) error {
 		Role:            info.Role,
 	}
 
-	err = it.Repo.UserSaveSQL(newUser)
+	err = it.Repo.CreateUserSQL(newUser)
 	if err != nil {
 		return err
 	}
@@ -38,7 +38,7 @@ func (it *LayerUseCase) CreateUser(info dto.UserReq) error {
 }
 
 func (it *LayerUseCase) GetUser(infoID string) (dto.UserRes, error) {
-	result, err := it.Repo.UserReadSQL(infoID)
+	result, err := it.Repo.GetUserSQL(infoID)
 	if err != nil {
 		return dto.UserRes{}, err
 	}
@@ -46,8 +46,8 @@ func (it *LayerUseCase) GetUser(infoID string) (dto.UserRes, error) {
 	return result, nil
 }
 
-func (it *LayerUseCase) GetAllUsers() ([]dto.UserRes, error) {
-	result, err := it.Repo.ReadAllUserSQL()
+func (it *LayerUseCase) GetUserList() ([]dto.UserRes, error) {
+	result, err := it.Repo.GetUserListSQL()
 	if err != nil {
 		return []dto.UserRes{}, err
 	}
@@ -55,8 +55,17 @@ func (it *LayerUseCase) GetAllUsers() ([]dto.UserRes, error) {
 	return result, nil
 }
 
-func (it *LayerUseCase) UpdateUser(info dto.UserUpdateReq) error {
-	var err = it.Repo.UserUpdateSQL(info)
+func (it *LayerUseCase) EditUser(id string, info dto.EditUserReq) error {
+	if info.Password != nil {
+		hash, err := security.HashPassword(*info.Password)
+		if err != nil {
+			return fmt.Errorf("Error Bycript HashPassword")
+		}
+		info.Password = &hash
+	}
+
+	err := it.Repo.EditUserSQL(id, info)
+
 	if err != nil {
 		return err
 	}
@@ -64,7 +73,7 @@ func (it *LayerUseCase) UpdateUser(info dto.UserUpdateReq) error {
 }
 
 func (it *LayerUseCase) DeleteUser(infoID string) error {
-	var err = it.Repo.UserDeleteSQL(infoID)
+	var err = it.Repo.DeleteUserSQL(infoID)
 	if err != nil {
 		return err
 	}

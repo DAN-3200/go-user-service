@@ -11,7 +11,7 @@ import (
 	"github.com/google/uuid"
 )
 
-func (it *LayerUseCase) UserLogin(info dto.Login) (string, error) {
+func (it *LayerUseCase) LoginUser(info dto.Login) (string, error) {
 	UserDB, err := it.Repo.LoginUserSQL(info.Email)
 	if err != nil {
 		return "", err
@@ -42,7 +42,7 @@ func (it *LayerUseCase) UserLogin(info dto.Login) (string, error) {
 	return stringJWT, nil
 }
 
-func (it *LayerUseCase) UserLogout(infoID string) error {
+func (it *LayerUseCase) LogoutUser(infoID string) error {
 	err := userauth.LogoutUserSession(infoID)
 	if err != nil {
 		return err
@@ -50,7 +50,7 @@ func (it *LayerUseCase) UserLogout(infoID string) error {
 	return nil
 }
 
-func (it *LayerUseCase) UserRegister(info dto.UserRegisterReq) error {
+func (it *LayerUseCase) RegisterUser(info dto.UserRegisterReq) error {
 	hash, err := security.HashPassword(info.Password)
 	if err != nil {
 		return fmt.Errorf("Error Bycript HashPassword")
@@ -68,7 +68,7 @@ func (it *LayerUseCase) UserRegister(info dto.UserRegisterReq) error {
 		Role:            "user",
 	}
 
-	err = it.Repo.UserSaveSQL(newUser)
+	err = it.Repo.CreateUserSQL(newUser)
 	if err != nil {
 		return err
 	}
@@ -97,14 +97,14 @@ func (it *LayerUseCase) SendRefreshForEmail(email string) error {
 	return nil
 }
 
-func (it *LayerUseCase) RefreshPassword(info dto.RefreshPassword) error {
+func (it *LayerUseCase) RefreshPassword(id string,info dto.RefreshPassword) error {
 	hash, err := security.HashPassword(info.NewPassword)
 	if err != nil {
 		return err
 	}
 
 	info.NewPassword = hash
-	err = it.Repo.RefreshPassword(info)
+	err = it.Repo.RefreshPassword(id,info)
 	if err != nil {
 		return err
 	}
