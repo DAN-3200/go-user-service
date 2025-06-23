@@ -62,8 +62,8 @@ func ValidateJWT(tokenString string) (bool, ModelClaims) {
 }
 
 func RemoveBearerPrefix(TokenString string) string {
-	if strings.HasPrefix(TokenString, "Bearer ") {
-		TokenString = strings.TrimPrefix(TokenString, "Bearer ")
+	if after, ok := strings.CutPrefix(TokenString, "Bearer "); ok {
+		TokenString = after
 	}
 
 	return TokenString
