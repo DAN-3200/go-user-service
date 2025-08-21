@@ -1,7 +1,7 @@
 package main
 
 import (
-	"app/internal/server"
+	"app/internal/infrastructure/http/server"
 	"log"
 
 	"github.com/joho/godotenv"

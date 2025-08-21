@@ -5,13 +5,6 @@ import (
 	"reflect"
 )
 
-func Ternary[Anyone any](conditional bool, value1 Anyone, value2 Anyone) Anyone {
-	if conditional {
-		return value1
-	}
-	return value2
-}
-
 func MapSQLInsertFields(sqlFields map[string]string, payload any) ([]string, []any, error) {
 	v := reflect.ValueOf(payload)
 	t := reflect.TypeOf(payload)
