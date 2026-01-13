@@ -7,6 +7,8 @@ import (
 	"database/sql"
 	"fmt"
 	"strings"
+
+	sq "github.com/Masterminds/squirrel"
 )
 
 // Receber qualquer banco SQL
@@ -72,11 +74,14 @@ func (it *SQLManager) CreateUserSQL(info entity.User) error {
 }
 
 func (it *SQLManager) GetUserSQL(infoID string) (dto.UserRes, error) {
-	query := `SELECT id, name, email, role, created_at FROM users WHERE id=$1`
-	row := it.DB.QueryRow(query, infoID)
+	query, args, err := sq.Select("id","name", "email", "role", "created_at").From("users").Where(sq.Eq{"id": infoID}).ToSql()
+	if err != nil {
+		return dto.UserRes{}, err
+	}
+	row := it.DB.QueryRow(query, args...)
 
 	var userObj dto.UserRes
-	err := row.Scan(
+	err = row.Scan(
 		&userObj.ID,
 		&userObj.Name,
 		&userObj.Email,

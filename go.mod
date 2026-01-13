@@ -17,6 +17,7 @@ require (
 
 require (
 	dario.cat/mergo v1.0.2 // indirect
+	github.com/Masterminds/squirrel v1.5.4 // indirect
 	github.com/air-verse/air v1.62.0 // indirect
 	github.com/beorn7/perks v1.0.1 // indirect
 	github.com/bep/godartsass/v2 v2.5.0 // indirect
@@ -40,6 +41,8 @@ require (
 	github.com/gohugoio/hugo v0.147.7 // indirect
 	github.com/json-iterator/go v1.1.12 // indirect
 	github.com/klauspost/cpuid/v2 v2.2.10 // indirect
+	github.com/lann/builder v0.0.0-20180802200727-47ae307949d0 // indirect
+	github.com/lann/ps v0.0.0-20150810152359-62de8c46ede0 // indirect
 	github.com/leodido/go-urn v1.4.0 // indirect
 	github.com/mattn/go-colorable v0.1.14 // indirect
 	github.com/mattn/go-isatty v0.0.20 // indirect
