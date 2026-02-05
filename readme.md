@@ -26,37 +26,37 @@ Este projeto teve como objetivo o aprendizado e a consolidação dos conceitos e
 
 ```bash
 ├── internal
-│   ├── application                 # Camada de aplicação (orquestra o domínio)
-│   │   ├── dto                     # Data Transfer Objects (Request / Response)
-│   │   ├── ports                   # Interfaces (contratos: repositórios, serviços)
-│   │   └── usecase                 # Casos de uso (regras da aplicação)
+│   ├── application                 	# Camada de aplicação (orquestra o domínio)
+│   │   ├── dto                     	# Data Transfer Objects (Request / Response)
+│   │   ├── ports                   	# Interfaces (contratos: repositórios, serviços)
+│   │   └── usecase                 	# Casos de uso (regras da aplicação)
 │   │
-│   ├── domain                      # Núcleo do negócio (independente de infra)
-│   │   ├── entity                  # Entidades do domínio
-│   │   └── vo                      # Value Objects 
+│   ├── domain                      	# Núcleo do negócio (independente de infra)
+│   │   ├── entity                  	# Entidades do domínio
+│   │   └── vo                      	# Value Objects 
 │   │
-│   └── infrastructure              # Implementações técnicas
-│       ├── adapters                # Adaptações para dependências externas
+│   └── infrastructure              	# Implementações técnicas
+│       ├── adapters                	# Adaptações para dependências externas
 │       │
-│       ├── http                    # Camada de entrega HTTP
-│       │   ├── controller          # Controladores (handlers)
-│       │   ├── middlewares         # Middlewares HTTP
-│       │   ├── routes              # Definição das rotas da API
-│       │   └── server              # Inicialização do servidor HTTP
+│       ├── http                    	# Camada de entrega HTTP
+│       │   ├── controller         	 	# Controladores (handlers)
+│       │   ├── middlewares         	# Middlewares HTTP
+│       │   ├── routes              	# Definição das rotas da API
+│       │   └── server              	# Inicialização do servidor HTTP
 │       │
-│       └── persistence             # Camada de persistência
-│           ├── cache               # Cache para Sessão de usuário (Redis, memória, etc)
-│           ├── db                  # Conexão com banco de dados
-│           ├── repository          # Implementação concreta dos repositórios
-│           └── schema              # Schemas / models do banco (SQL)
+│       └── persistence             	# Camada de persistência
+│           ├── cache               	# Cache para Sessão de usuário (Redis, memória, etc)
+│           ├── db                  	# Conexão com banco de dados
+│           ├── repository          	# Implementação concreta dos repositórios
+│           └── schema              	# Schemas / models do banco (SQL)
 │
-├── pkg                             # Pacotes reutilizáveis
-│   ├── resttype                    # Definições de tipos de resposta REST
-│   └── utils                       # Funções utilitárias genéricas
+├── pkg                             	# Pacotes reutilizáveis
+│   ├── resttype                    	# Definições de tipos de resposta REST
+│   └── utils                       	# Funções utilitárias genéricas
 │
-├── tests                           # Testes automatizados
-│   ├── integration                 # Testes de integração (fluxo completo)
-│   └── unit                        # Testes unitários (isolados)
+├── tests                           	# Testes automatizados
+│   ├── integration                 	# Testes de integração (fluxo completo)
+│   └── unit                        	# Testes unitários (isolados)
 │
 ├── main.go                  			# Ponto de entrada da aplicação
 ├── go.mod                  			# Módulo e dependências do projeto
