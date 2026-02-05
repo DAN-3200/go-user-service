@@ -2,7 +2,7 @@ package middlewares
 
 import (
 	"app/internal/infrastructure/adapters"
-
+	"app/internal/infrastructure/persistence/cache"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -15,18 +15,18 @@ func Auth2FA() gin.HandlerFunc {
 
 		isValid, claims := adapters.Static.ValidateJWT(tokenString)
 		if isValid == false {
-			ctx.AbortWithStatusJSON(http.StatusUnauthorized, "JWT inválido")
+			ctx.AbortWithStatusJSON(http.StatusUnauthorized, "Token inválido")
 			return
 		}
 
-		userInSession, err := adapters.Static.GetUserSession(claims.UserID)
+		userInSession, err := cache.Session.GetUserSession(claims.UserID)
 		if err != nil {
 			ctx.AbortWithStatusJSON(http.StatusUnauthorized, "Não há usuário em sessão")
 			return
 		}
 
 		if adapters.RemoveBearerPrefix(tokenString) != userInSession.JWT {
-			ctx.AbortWithStatusJSON(http.StatusUnauthorized, "Distinct token")
+			ctx.AbortWithStatusJSON(http.StatusUnauthorized, "Token distinto")
 			return
 		}
 

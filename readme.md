@@ -26,38 +26,51 @@ Este projeto teve como objetivo o aprendizado e a consolidação dos conceitos e
 
 ```bash
 ├── internal
-│   ├── domain               # Regras de negócio e contratos da aplicação
-│   │   ├── dto              # Data Transfer Objects
-│   │   ├── entity           # Entidades do domínio
-│   │   ├── ports            # Interfaces (contratos de entrada/saída)
-│   │   └── usecase          # Casos de uso (regras de negócio aplicadas)
-│   ├── infrastructure       # Implementação de interfaces externas
-│   │   ├── adapters         # Adaptações para dependências externas (ex: repos, services)
-│   │   ├── db               # Conexão ao banco
-│   │   └── http             # Camada de entrega HTTP
-│   │       ├── controller   # Controladores 
-│   │       ├── middlewares  # Middlewares HTTP 
-│   │       ├── routes       # Definição das rotas da API
-│   │       └── server       # Inicialização do servidor HTTP
-│   └── tests                # Testes internos
-│       ├── integration      # Testes de integração 
-│       └── unit             # Testes unitários 
-├── pkg                      # Pacotes compartilhados entre módulos
-│   ├── resttype             # Definições de tipos de resposta REST
-│   └── utils                # Funções utilitárias genéricas
-├── main.go                  # Ponto de entrada da aplicação
-├── go.mod                   # Módulo e dependências do projeto
-├── go.sum                   # Hashes das dependências
-├── .air.toml                # Configuração do Air (live reload)
-├── .dockerignore            # Arquivos ignorados pelo Docker
-├── .env.example             # Exemplo de variáveis de ambiente
-├── .gitignore               # Arquivos ignorados pelo Git
-├── docker-compose.yml       # Orquestração de serviços com Docker
-├── dockerfile               # Dockerfile da aplicação
-├── LICENSE                  # Licença do projeto
-├── Makefile                 # Atalhos para comandos e automações
-├── prometheus.yml           # Configuração do Prometheus
-└── README.md                # Documentação do projeto
+│   ├── application                 # Camada de aplicação (orquestra o domínio)
+│   │   ├── dto                     # Data Transfer Objects (Request / Response)
+│   │   ├── ports                   # Interfaces (contratos: repositórios, serviços)
+│   │   └── usecase                 # Casos de uso (regras da aplicação)
+│   │
+│   ├── domain                      # Núcleo do negócio (independente de infra)
+│   │   ├── entity                  # Entidades do domínio
+│   │   └── vo                      # Value Objects 
+│   │
+│   └── infrastructure              # Implementações técnicas
+│       ├── adapters                # Adaptações para dependências externas
+│       │
+│       ├── http                    # Camada de entrega HTTP
+│       │   ├── controller          # Controladores (handlers)
+│       │   ├── middlewares         # Middlewares HTTP
+│       │   ├── routes              # Definição das rotas da API
+│       │   └── server              # Inicialização do servidor HTTP
+│       │
+│       └── persistence             # Camada de persistência
+│           ├── cache               # Cache para Sessão de usuário (Redis, memória, etc)
+│           ├── db                  # Conexão com banco de dados
+│           ├── repository          # Implementação concreta dos repositórios
+│           └── schema              # Schemas / models do banco (SQL)
+│
+├── pkg                             # Pacotes reutilizáveis
+│   ├── resttype                    # Definições de tipos de resposta REST
+│   └── utils                       # Funções utilitárias genéricas
+│
+├── tests                           # Testes automatizados
+│   ├── integration                 # Testes de integração (fluxo completo)
+│   └── unit                        # Testes unitários (isolados)
+│
+├── main.go                  			# Ponto de entrada da aplicação
+├── go.mod                  			# Módulo e dependências do projeto
+├── go.sum                   			# Hashes das dependências
+├── .air.toml                			# Configuração do Air (live reload)
+├── .dockerignore            			# Arquivos ignorados pelo Docker
+├── .env.example             			# Exemplo de variáveis de ambiente
+├── .gitignore               			# Arquivos ignorados pelo Git
+├── docker-compose.yml       			# Orquestração de serviços com Docker
+├── dockerfile               			# Dockerfile da aplicação
+├── LICENSE                  			# Licença do projeto
+├── Makefile                 			# Atalhos para comandos e automações
+├── prometheus.yml           			# Configuração do Prometheus
+└── README.md                			# Documentação do projeto
 ```
 
 ## Instalação e execução
@@ -138,13 +151,13 @@ make run
 | <kbd>GET /me</kbd>                                     | Obter informações do usuário autenticado |
 | <kbd>PATCH /me</kbd>                                   | Atualizar informações do próprio usuário |
 
-## Roadmap
+<!-- ## Roadmap
 
 | Objetivo                        | Status                  | Previsão  |
 | ------------------------------- | ----------------------- | --------- |
 | Envio de token por e‑mail       | <kbd>concluido</kbd>    | Maio/2025 |
 | Integração Prometheus & Grafana | <kbd>em andamento</kbd> | Ago/2025  |
-| Pipeline de deploy (CI/CD)      | <kbd>pendente</kbd>     | Set/2025  |
+| Pipeline de deploy (CI/CD)      | <kbd>pendente</kbd>     | Set/2025  | -->
 
 ## Licença
 

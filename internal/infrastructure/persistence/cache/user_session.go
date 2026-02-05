@@ -1,8 +1,7 @@
-package adapters
+package cache
 
 // Necessita do redis-server ativo
 import (
-	"app/internal/domain/entity"
 	"context"
 	"encoding/json"
 	"fmt"
@@ -20,9 +19,26 @@ func InitCoreRedis(core *redis.Client) {
 	useRedis = core
 }
 
-type SessionCache struct{}
+var Session = LayerUserSession{}
 
-func (it SessionCache) SetUserSession(info entity.UserSession) error {
+type LayerUserSession struct{}
+
+type UserSession struct {
+	Id    string
+	Name  string
+	Email string
+	Role  string
+	JWT   string
+}
+
+func (it LayerUserSession) SetUserSession(Id string, Name string, Email string, Role string, JWT string) error {
+	info := UserSession{
+		Id:    Id,
+		Name:  Name,
+		Email: Email,
+		Role:  Role,
+		JWT:   JWT,
+	}
 	infoJSON, err := json.Marshal(info)
 	if err != nil {
 		fmt.Print(err)
@@ -37,8 +53,8 @@ func (it SessionCache) SetUserSession(info entity.UserSession) error {
 	return nil
 }
 
-func (it SessionCache) GetUserSession(Id string) (*entity.UserSession, error) {
-	var obj entity.UserSession
+func (it LayerUserSession) GetUserSession(Id string) (*UserSession, error) {
+	var obj UserSession
 	query, err := useRedis.Get(ctx, Id).Result()
 	if err != nil {
 		fmt.Println("Erro de Consultar Redis: ", err)
@@ -54,7 +70,7 @@ func (it SessionCache) GetUserSession(Id string) (*entity.UserSession, error) {
 	return &obj, nil
 }
 
-func (it SessionCache) LogoutUserSession(Id string) error {
+func (it LayerUserSession) LogoutUserSession(Id string) error {
 	err := useRedis.Del(ctx, Id).Err()
 	if err != nil {
 		fmt.Printf("Erro ao remover chave: %v", err)
@@ -64,15 +80,15 @@ func (it SessionCache) LogoutUserSession(Id string) error {
 	return nil
 }
 
-func (it SessionCache) GetInfoSession(ctx *gin.Context, key string) (*entity.UserSession, error) {
-	var value_format *entity.UserSession
+func (it LayerUserSession) GetInfoSession(ctx *gin.Context, key string) (*UserSession, error) {
+	var value_format *UserSession
 
 	value_base, ok := ctx.Get(key)
 	if !ok {
 		return value_format, fmt.Errorf("Key não existe")
 	}
 
-	value_format, ok = value_base.(*entity.UserSession)
+	value_format, ok = value_base.(*UserSession)
 	if !ok {
 		return value_format, fmt.Errorf("Erro ao formatar a informação")
 	}

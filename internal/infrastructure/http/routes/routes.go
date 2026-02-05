@@ -10,7 +10,7 @@ import (
 	"github.com/redis/go-redis/v9"
 )
 
-func SetRoutes(server *gin.Engine, controller *controller.LayerController) {
+func SetUserManagerRoutes(server *gin.Engine, controller *controller.UserManagerController) {
 	admin := server.Group("/users", mdw.Auth2FA(), mdw.AuthRole("admin"))
 	{
 		admin.POST("", controller.CreateUser)
@@ -19,21 +19,25 @@ func SetRoutes(server *gin.Engine, controller *controller.LayerController) {
 		admin.PATCH(":id", controller.EditUser)
 		admin.DELETE(":id", controller.DeleteUser)
 	}
+}
 
+func SetUserAuthRoutes(server *gin.Engine, controllerAuth *controller.UserAuthController, controllerCRUD *controller.UserManagerController) {
 	auth := server.Group("/auth")
 	{
-		auth.POST("/login", controller.LoginUser)
-		auth.POST("/logout", mdw.Auth2FA(), controller.LogoutUser)
-		auth.POST("/register", controller.RegisterUser)
+		auth.POST("/login", controllerAuth.LoginUser)
+		auth.POST("/logout", mdw.Auth2FA(), controllerAuth.LogoutUser)
+		auth.POST("/register", controllerCRUD.CreateUser)
 		auth.POST("/refresh-token")
 		auth.POST("/verify-email")
 		forgetPassword := auth.Group("/forget-password")
 		{
-			forgetPassword.GET("/send-token/:email", controller.SendRefreshForEmail)
-			forgetPassword.POST("/refresh-password", controller.RefreshPassword)
+			forgetPassword.GET("/send-token/:email", controllerAuth.SendRefreshForEmail)
+			forgetPassword.POST("/refresh-password", controllerAuth.RefreshPassword)
 		}
 	}
+}
 
+func SetUserInfoRoutes(server *gin.Engine, controller *controller.UserInfoController) {
 	me := server.Group("/me", mdw.Auth2FA())
 	{
 		me.GET("", controller.GetMyInfo)

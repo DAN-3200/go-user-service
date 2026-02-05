@@ -13,7 +13,7 @@ var secretKEY = []byte(os.Getenv("SECRET_KEY"))
 
 type JWT struct{}
 
-func (it JWT) GenerateJWT(userID, userRole string) (string, error) {
+func (it JWT) GenerateJWT(userID string, userRole string) (string, error) {
 	// formato do JWT : Header.Payload.Signature
 	tokenString, err := jwt.
 		NewWithClaims(

@@ -2,20 +2,32 @@
 package controller
 
 import (
-	"app/internal/domain/dto"
+	"app/internal/application/dto"
+	"app/internal/application/usecase"
+	"app/pkg/utils"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
 )
 
-func (it *LayerController) CreateUser(ctx *gin.Context) {
-	request, err := MapReqJSON[dto.UserReq](ctx)
+
+type UserManagerController struct {
+	useCase *usecase.UserManagerUC
+}
+
+func InitUserManager(usecase *usecase.UserManagerUC) *UserManagerController {
+	return &UserManagerController{usecase}
+}
+
+
+func (it *UserManagerController) CreateUser(ctx *gin.Context) {
+	request, err := utils.MapReqJSON[dto.UserRegisterReq](ctx)
 	if err != nil {
 		ctx.String(http.StatusInternalServerError, err.Error())
 		return
 	}
 
-	err = it.useCase.CreateUser(*request)
+	err = it.useCase.RegisterUser(*request)
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, err)
 		return
@@ -24,7 +36,7 @@ func (it *LayerController) CreateUser(ctx *gin.Context) {
 	ctx.String(http.StatusCreated, "Usuário criado com sucesso")
 }
 
-func (it *LayerController) GetUser(ctx *gin.Context) {
+func (it *UserManagerController) GetUser(ctx *gin.Context) {
 	paramID := ctx.Param("id")
 
 	response, err := it.useCase.GetUser(paramID)
@@ -36,7 +48,7 @@ func (it *LayerController) GetUser(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, response)
 }
 
-func (it *LayerController) GetUserList(ctx *gin.Context) {
+func (it *UserManagerController) GetUserList(ctx *gin.Context) {
 	response, err := it.useCase.GetUserList()
 	if err != nil {
 		ctx.JSON(http.StatusNotFound, err)
@@ -46,10 +58,10 @@ func (it *LayerController) GetUserList(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, response)
 }
 
-func (it *LayerController) EditUser(ctx *gin.Context) {
+func (it *UserManagerController) EditUser(ctx *gin.Context) {
 	paramID := ctx.Param("id")
 
-	request, err := MapReqJSON[dto.EditUserReq](ctx)
+	request, err := utils.MapReqJSON[dto.EditUserReq](ctx)
 	if err != nil {
 		ctx.String(http.StatusInternalServerError, err.Error())
 		return
@@ -64,11 +76,10 @@ func (it *LayerController) EditUser(ctx *gin.Context) {
 	ctx.String(http.StatusOK, "Usuário atualizado com sucesso")
 }
 
-func (it *LayerController) DeleteUser(ctx *gin.Context) {
+func (it *UserManagerController) DeleteUser(ctx *gin.Context) {
 	paramID := ctx.Param("id")
 
 	err := it.useCase.DeleteUser(paramID)
-	it.useCase.LogoutUser(paramID)
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, err)
 		return

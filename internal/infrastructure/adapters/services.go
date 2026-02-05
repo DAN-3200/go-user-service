@@ -11,12 +11,11 @@ import (
 
 type ServiceLayer struct {
 	JWT
-	SessionCache
 }
 
 var Static = ServiceLayer{}
 
-func LayerService() *ServiceLayer {
+func NewInstanceService() *ServiceLayer {
 	return &ServiceLayer{}
 }
 

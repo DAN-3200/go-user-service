@@ -1,7 +1,7 @@
 package middlewares
 
 import (
-	"app/internal/infrastructure/adapters"
+	"app/internal/infrastructure/persistence/cache"
 
 	"net/http"
 
@@ -10,7 +10,7 @@ import (
 
 func AuthRole(requiredRole string) gin.HandlerFunc {
 	return func(ctx *gin.Context) {
-		role, err := adapters.Static.GetInfoSession(ctx, "user_session")
+		role, err := cache.Session.GetInfoSession(ctx, "user_session")
 		if err != nil {
 			ctx.AbortWithStatusJSON(http.StatusInternalServerError, "Erro ao requerir dados de sessão")
 			return
